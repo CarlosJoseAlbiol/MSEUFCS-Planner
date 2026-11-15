@@ -71,7 +71,7 @@ label{display:block;margin:8px 0;font-size:13px;color:var(--mut)}#bar label,.row
 // ====== 1. PASTE YOUR FIREBASE CONFIG (Project settings → Your apps → Web app) ======
 const firebaseConfig={apiKey:"YOUR_API_KEY",authDomain:"YOUR_PROJECT.firebaseapp.com",projectId:"YOUR_PROJECT",storageBucket:"YOUR_PROJECT.appspot.com",messagingSenderId:"000000000000",appId:"YOUR_APP_ID"};
 // ====== 2. First Master of Initiation (can add other staff in the Access tab). Use lowercase Gmail ======
-const OWNERS=["your-email@gmail.com"];
+const OWNERS=["oblefiascarlos@gmail.com"];
 
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore(),auth=firebase.auth();
@@ -248,7 +248,7 @@ function finderRes(){
 
 // ---------- staff access ----------
 function accessView(){
-  return `<h2>Staff access</h2><p class="hint">Anyone listed here can sign in with Google and edit events, roles and schedules.</p>`+
+  return `<h2>Staff access</h2><p class="hint">Anyone listed here can sign in with their email and edit events, roles and schedules.</p>`+
   staffList.map(s=>`<div class="row line"><span>${esc(s.id)}</span><span class="sp"></span><select onchange="db.collection('staff').doc('${esc(s.id)}').update({role:this.value}).catch(fail)">${opts(STAFF_ROLES,s.role)}</select><button onclick="rmStaff('${esc(s.id)}')">Remove</button></div>`).join("")+
   `<form class="row" onsubmit="addStaff(event)"><input name="email" type="email" placeholder="gmail address" required><select name="role">${opts(STAFF_ROLES,"member")}</select><button class="pri">Add staff</button></form>`;
 }
