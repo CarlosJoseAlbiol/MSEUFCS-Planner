@@ -101,14 +101,12 @@ dialog[open]{animation:pop .4s cubic-bezier(.22,.8,.24,1) both}dialog[open]::bac
 <script>
 // ====== 1. PASTE YOUR FIREBASE CONFIG (Project settings → Your apps → Web app) ======
 const firebaseConfig={apiKey:"AIzaSyAVmZRNPRF5vozc9q3vSwNQjOSDRYtLuxI",authDomain:"mseuf-grading-sheet.firebaseapp.com",projectId:"mseuf-grading-sheet",storageBucket:"mseuf-grading-sheet.firebasestorage.app",messagingSenderId:"548651789448",appId:"1:548651789448:web:94af671a75e00dff14033d"};
-// ====== 2. First Master of Initiation (can add other staff in the Access tab). Use lowercase Gmail ======
-const OWNERS=["oblefiascarlos@gmail.com"];
 
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore(),auth=firebase.auth();
 const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],CODE={M:1,T:2,W:3,Th:4,F:5,S:6};
 const ROLES={trainee:"Trainee",member:"Member",senior:"Senior member",mi:"Master of Initiation"};
-const STAFF_ROLES={member:"Member",senior:"Senior member",mi:"Master of Initiation"};
+const ROLE_AUTH={master:"Master of Initiation",senior:"Senior Member"};
 const LBL={yes:"Available (confirmed)",free:"Available",busy:"Class conflict",no:"Not available"};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -120,7 +118,7 @@ const opts=(o,sel)=>Object.entries(o).map(([k,v])=>`<option value="${k}" ${k===s
 const fld=(l,n,v,t="text",r)=>`<label>${l}<input name="${n}" type="${t}" value="${esc(v)}" ${r?"required":""}></label>`;
 const parseDays=s=>[...s.matchAll(/Th|M|T|W|F|S/g)].map(m=>CODE[m[0]]);
 
-let people=[],events=[],staffList=[],role=null,user=null,tab="events",me=localStorage.getItem("me")||"",viewPid="",showPast=false,unsubStaff=null;
+let people=[],events=[],role=null,user=null,profile=null,tab="events",me=localStorage.getItem("me")||"",viewPid="",showPast=false;
 const tmr=new Date();tmr.setDate(tmr.getDate()+1);
 let f={date:iso(tmr),start:"16:00",end:"18:00",aud:"trainee"};
 
@@ -160,26 +158,23 @@ db.collection("people").onSnapshot(s=>{people=s.docs.map(d=>({id:d.id,...d.data(
 db.collection("events").onSnapshot(s=>{events=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));render()},fail);
 let viewer=localStorage.getItem("viewer")==="1",lt="trainee",lmode="in",lmsg="",loginDrawn=false,wasIn=false;
 auth.onAuthStateChanged(async u=>{
-  user=u;role=null;if(unsubStaff){unsubStaff();unsubStaff=null}
+  user=u;role=null;profile=null;
   if(u){
-    const em=u.email.toLowerCase(),ref=db.collection("staff").doc(em);
-    try{const s=await ref.get();
-      if(s.exists)role=s.data().role;
-      else if(OWNERS.includes(em)){await ref.set({role:"mi"});role="mi"}
-    }catch(e){fail(e)}
-    if(role)unsubStaff=db.collection("staff").onSnapshot(s=>{staffList=s.docs.map(d=>({id:d.id,...d.data()}));render()},fail);
-    else{lt="staff";lmsg=em+" is not on the staff list. Ask a Master of Initiation to add you.";loginDrawn=false;auth.signOut()}
+    let d=null;
+    try{const x=await db.collection("users").doc(u.uid).get();d=x.exists?x.data():null}catch(e){fail(e)}
+    if(d&&(d.role==="master"||d.role==="senior")){role=d.role;profile=d}
+    else{lt="staff";lmsg=d?"This is a trainee account. Choose Trainee and continue, no login needed.":"No grading sheet account found for this email. Create one in the grading sheet first.";loginDrawn=false;auth.signOut()}
   }
   render();
 });
 const nice=x=>({"auth/invalid-credential":"Wrong email or password.","auth/email-already-in-use":"That email already has an account. Sign in instead.","auth/weak-password":"Password needs at least 6 characters.","auth/too-many-requests":"Too many tries. Wait a bit and try again."})[x.code]||x.message;
 function renderLogin(){
-  $("#ltitle").textContent=lt==="trainee"?"Welcome, trainee":lmode==="up"?"Create account":"Sign in";
+  $("#ltitle").textContent=lt==="trainee"?"Welcome, trainee":"Sign in";
   $("#lseg").dataset.active=lt;
   document.querySelectorAll("#lseg button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.g===lt)));
   $("#lbody").innerHTML=(lt==="trainee"?`<p class="sub">No login needed.</p><button class="gold wide" onclick="enterViewer()">Continue</button>`:
-  `<form onsubmit="staffAuth(event)"><label>Email<input name="email" type="email" placeholder="you@example.com" required autocomplete="email"></label><label>Password<input name="password" type="password" minlength="6" placeholder="At least 6 characters" required autocomplete="${lmode==="up"?"new-password":"current-password"}"></label><button class="gold wide">${lmode==="up"?"Create account":"Sign in"}</button></form>
-  <div class="row between"><span>${lmode==="up"?"Have an account?":"New here?"} <a href="#" onclick="swapLogin(()=>{lmode='${lmode==="up"?"in":"up"}';lmsg='';renderLogin()});return false">${lmode==="up"?"Sign in":"Create an account"}</a></span><a href="#" onclick="resetPw();return false">Forgot password?</a></div><p class="hint">Only Masters of Initiation, senior members and members on the staff list can get in.</p>`)+`<p class="err" id="lm" role="alert">${esc(lmsg)}</p>`;
+  `<form onsubmit="staffAuth(event)"><label>Email<input name="email" type="email" placeholder="you@example.com" required autocomplete="email"></label><label>Password<input name="password" type="password" minlength="6" placeholder="At least 6 characters" required autocomplete="current-password"></label><button class="gold wide">Sign in</button></form>
+  <div class="row between"><span></span><a href="#" onclick="resetPw();return false">Forgot password?</a></div><p class="hint">Use your grading sheet account. Only Masters of Initiation and Senior Members can sign in.</p>`)+`<p class="err" id="lm" role="alert">${esc(lmsg)}</p>`;
   loginDrawn=true;
 }
 let swapBusy=false;
@@ -189,7 +184,7 @@ async function swapLogin(change){
 }
 document.querySelectorAll("#lseg button").forEach(b=>b.onclick=()=>{if(b.dataset.g!==lt)swapLogin(()=>{lt=b.dataset.g;lmsg="";renderLogin()})});
 function staffAuth(e){e.preventDefault();const d=Object.fromEntries(new FormData(e.target));$("#lm").textContent="";
-  (lmode==="up"?auth.createUserWithEmailAndPassword(d.email,d.password):auth.signInWithEmailAndPassword(d.email,d.password)).catch(x=>$("#lm").textContent=nice(x))}
+  auth.signInWithEmailAndPassword(d.email,d.password).catch(x=>$("#lm").textContent=nice(x))}
 function resetPw(){const em=$("#lcard [name=email]").value.trim();if(!em)return $("#lm").textContent="Type your email first.";
   auth.sendPasswordResetEmail(em).then(()=>$("#lm").textContent="Reset link sent. Check your email.").catch(x=>$("#lm").textContent=nice(x))}
 function enterViewer(){viewer=true;localStorage.setItem("viewer","1");render()}
@@ -207,12 +202,12 @@ function render(){
   const inApp=!!role||viewer;$("#login").hidden=inApp;$("#shell").hidden=!inApp;
   if(!inApp){wasIn=false;if(!loginDrawn)renderLogin();return}
   loginDrawn=false;
-  const T=role?[["events","Events"],["people","People"],["finder","Who’s free"],["access","Access"]]:[["events","Events"],["mine","My schedule"],["finder","Who’s free"]];
+  const T=role?[["events","Events"],["people","People"],["finder","Who’s free"]]:[["events","Events"],["mine","My schedule"],["finder","Who’s free"]];
   if(!T.some(t=>t[0]===tab))tab="events";
-  $("#who").innerHTML=role?`<div class="who"><b>${esc(user.email)}</b><small>${ROLES[role]}</small></div><button onclick="leave()">Sign out</button>`:`<div class="who"><b>Trainee view</b><small>No login needed</small></div><button onclick="leave()">Staff sign in</button>`;
+  $("#who").innerHTML=role?`<div class="who"><b>${esc(profile.name||user.email)}</b><small>${ROLE_AUTH[role]}</small></div><button onclick="leave()">Sign out</button>`:`<div class="who"><b>Trainee view</b><small>No login needed</small></div><button onclick="leave()">Staff sign in</button>`;
   $("#tabs").innerHTML=T.map(([k,l])=>`<button class="${k===tab?"on":""}" onclick="go('${k}')">${l}</button>`).join("");
   $("#bar").innerHTML=`<label>I am: <select onchange="setMe(this.value)"><option value="">— choose your name —</option>${people.map(p=>`<option value="${p.id}" ${p.id===me?"selected":""}>${esc(p.name)}</option>`).join("")}</select></label><button onclick="addPerson()">I’m not listed</button>`;
-  $("#app").innerHTML=({events:evView,mine:()=>schedView(me),people:peopleView,finder:finderView,access:accessView})[tab]();
+  $("#app").innerHTML=({events:evView,mine:()=>schedView(me),people:peopleView,finder:finderView})[tab]();
   if(tab==="finder")finderRes();
   if(!wasIn){wasIn=true;animateMain()}
 }
@@ -309,15 +304,6 @@ function finderRes(){
   const g=people.filter(p=>f.aud==="all"||p.role==="trainee").map(p=>({p,...status(p,{...f,responses:{}})}));
   el.innerHTML=`<p><span class="ok">${g.filter(x=>x.s==="free").length} free</span> · <span class="bad">${g.filter(x=>x.s==="busy").length} busy</span></p>`+lst("Free",g.filter(x=>x.s==="free"))+lst("Busy",g.filter(x=>x.s==="busy"));
 }
-
-// ---------- staff access ----------
-function accessView(){
-  return `<h2>Staff access</h2><p class="hint">Anyone listed here can sign in with their email and edit events, roles and schedules.</p>`+
-  staffList.map(s=>`<div class="row line"><span>${esc(s.id)}</span><span class="sp"></span><select onchange="db.collection('staff').doc('${esc(s.id)}').update({role:this.value}).catch(fail)">${opts(STAFF_ROLES,s.role)}</select><button onclick="rmStaff('${esc(s.id)}')">Remove</button></div>`).join("")+
-  `<form class="row" onsubmit="addStaff(event)"><input name="email" type="email" placeholder="gmail address" required><select name="role">${opts(STAFF_ROLES,"member")}</select><button class="pri">Add staff</button></form>`;
-}
-function addStaff(e){e.preventDefault();const d=Object.fromEntries(new FormData(e.target));db.collection("staff").doc(d.email.trim().toLowerCase()).set({role:d.role}).then(()=>e.target.reset()).catch(fail)}
-function rmStaff(id){if(id===user.email.toLowerCase())return toast("You can’t remove yourself");if(confirm("Remove "+id+"?"))db.collection("staff").doc(id).delete().catch(fail)}
 
 // ---------- starter schedules (read from the photos; edit in the app if anything is off) ----------
 const ARCH=[["TTh","07:30","11:00","Arch Design 3 – Creative Design in Architectural Interiors","CAFA203"],["MW","07:30","09:30","Arch. Visual Comm 5 – Visual Techniques 3","CAFA201"],["TTh","11:00","12:30","Building Utilities 1","CAFA201"],["MW","09:30","10:30","Tropical Design","CAFA304"],["MW","10:30","11:30","History of Architecture 2","CAFA304"],["MW","13:00","14:30","Mathematics in the Modern World","CAFA304"],["MW","14:30","16:00","Art Appreciation","CAFA304"],["TTh","13:00","14:30","Readings in Philippine History","CAFA304"],["TTh","14:30","16:00","Science, Technology and Society","CAFA201"],["F","07:30","09:30","PE 3 – Basic Swimming","GYMN6"]];
