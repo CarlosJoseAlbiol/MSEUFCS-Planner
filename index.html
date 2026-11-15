@@ -156,14 +156,14 @@ const byName=(a,b)=>(a.name||"").localeCompare(b.name||"");
 // ---------- data ----------
 db.collection("people").onSnapshot(s=>{people=s.docs.map(d=>({id:d.id,...d.data()})).sort(byName);render()},fail);
 db.collection("events").onSnapshot(s=>{events=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));render()},fail);
-let viewer=localStorage.getItem("viewer")==="1",lt="trainee",lmode="in",lmsg="",loginDrawn=false,wasIn=false;
+let viewer=localStorage.getItem("viewer")==="1",lt="trainee",lmode="in",lmsg="",loginDrawn=false,wasIn=false,tryingLogin=false;
 auth.onAuthStateChanged(async u=>{
   user=u;role=null;profile=null;
   if(u){
     let d=null;
     try{const x=await db.collection("users").doc(u.uid).get();d=x.exists?x.data():null}catch(e){fail(e)}
     if(d&&(d.role==="master"||d.role==="senior")){role=d.role;profile=d}
-    else{lt="staff";lmsg=d?"This is a trainee account. Choose Trainee and continue, no login needed.":"No grading sheet account found for this email. Create one in the grading sheet first.";loginDrawn=false;auth.signOut()}
+    else if(tryingLogin){tryingLogin=false;lt="staff";lmsg=d?"This is a trainee account. Choose Trainee and continue, no login needed.":"No grading sheet account found for this email. Create one in the grading sheet first.";loginDrawn=false}
   }
   render();
 });
@@ -183,8 +183,8 @@ async function swapLogin(change){
   const c=$("#lcard");c.classList.add("swap-out");await wait(170);morph(c,change);await wait(30);c.classList.remove("swap-out");await wait(400);swapBusy=false;
 }
 document.querySelectorAll("#lseg button").forEach(b=>b.onclick=()=>{if(b.dataset.g!==lt)swapLogin(()=>{lt=b.dataset.g;lmsg="";renderLogin()})});
-function staffAuth(e){e.preventDefault();const d=Object.fromEntries(new FormData(e.target));$("#lm").textContent="";
-  auth.signInWithEmailAndPassword(d.email,d.password).catch(x=>$("#lm").textContent=nice(x))}
+function staffAuth(e){e.preventDefault();tryingLogin=true;const d=Object.fromEntries(new FormData(e.target));$("#lm").textContent="";
+  auth.signInWithEmailAndPassword(d.email,d.password).catch(x=>{tryingLogin=false;$("#lm").textContent=nice(x)})}
 function resetPw(){const em=$("#lcard [name=email]").value.trim();if(!em)return $("#lm").textContent="Type your email first.";
   auth.sendPasswordResetEmail(em).then(()=>$("#lm").textContent="Reset link sent. Check your email.").catch(x=>$("#lm").textContent=nice(x))}
 function enterViewer(){viewer=true;localStorage.setItem("viewer","1");render()}
