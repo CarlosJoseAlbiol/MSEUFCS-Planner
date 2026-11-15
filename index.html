@@ -59,8 +59,39 @@ label{display:block;margin:8px 0;font-size:13px;color:var(--mut)}#bar label,.row
 #toast{position:fixed;bottom:16px;left:50%;transform:translate(-50%,90px);background:var(--gold);color:#2a0305;font-weight:600;padding:10px 18px;border-radius:999px;transition:.2s;max-width:90vw;z-index:9}#toast.show{transform:translate(-50%,0)}
 @media(max-width:800px){#login{grid-template-columns:1fr}.lr{border-left:0;min-height:0}.hero img{width:170px;height:170px}.hero h1{font-size:36px}#who .who{display:none}}
 @media(prefers-reduced-motion:reduce){#toast{transition:none}}
+
+/* ---------- motion (same feel as the grading sheet) ---------- */
+@keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes dropin{from{opacity:0;transform:translateY(-100%)}to{opacity:1;transform:none}}
+@keyframes drawline{from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:scaleX(1)}}
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 12px rgba(212,166,42,.13)}50%{box-shadow:0 0 0 18px rgba(212,166,42,.22)}}
+.seg{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.seg::before{content:"";position:absolute;top:3px;bottom:3px;left:3px;width:calc(50% - 4.5px);border-radius:999px;background:linear-gradient(#f7da72,#d9a82a);transition:transform .45s cubic-bezier(.22,.8,.24,1)}
+.seg[data-active=staff]::before{transform:translateX(calc(100% + 3px))}
+.seg button{position:relative;z-index:1;flex:none;background:none!important;transition:color .3s}
+.seg button[aria-pressed=true]{color:#2a0305}
+.lcard>*{transition:opacity .3s,transform .4s cubic-bezier(.22,.8,.24,1)}
+.lcard.swap-out>*:not(.seg){opacity:0;transform:translateY(8px);transition-duration:.17s}
+.lcard{animation:rise .7s .15s cubic-bezier(.22,.8,.24,1) both}
+#lbody>*{animation:fade .35s ease both}
+#login:not([hidden]) .hero>*{animation:rise .7s cubic-bezier(.22,.8,.24,1) both}
+.hero>:nth-child(2){animation-delay:.1s!important}.hero>:nth-child(3){animation:drawline 1s .25s ease-out both!important}
+.hero img{animation:rise .7s both,glow 5s ease-in-out 1s infinite!important}
+#shell:not([hidden]){animation:fade .6s ease both}
+#shell:not([hidden]) header{animation:dropin .55s cubic-bezier(.22,.8,.24,1) both}
+#app.leaving{opacity:0;transform:translateY(-12px);transition:opacity .19s ease,transform .19s ease}
+#app.enter>*{animation:rise .75s cubic-bezier(.22,.8,.24,1) both;animation-delay:calc(var(--i,0)*80ms)}
+#app.enter>.lines{transform-origin:left center;animation:drawline 1s ease-out both;animation-delay:calc(var(--i,0)*80ms)}
+#app.enter .stat,#app.enter .card,#app.enter .day,#app.enter .line{animation:rise .55s cubic-bezier(.22,.8,.24,1) both;animation-delay:calc(200ms + var(--j,0)*70ms)}
+nav button{transition:color .25s,border-color .25s}
+.stat,.card,.line,.day{transition:transform .2s,border-color .2s}.stat:hover{transform:translateY(-3px);border-color:var(--gold)}.card:hover,.line:hover,.day:hover{border-color:var(--gold)}
+button{transition:background .2s,color .2s,border-color .2s,transform .15s,box-shadow .2s}button.pri:hover,button.gold:hover{box-shadow:0 6px 22px rgba(219,150,0,.4);transform:translateY(-1px)}
+dialog[open]{animation:pop .4s cubic-bezier(.22,.8,.24,1) both}dialog[open]::backdrop{animation:fade .2s ease both}
+@media(prefers-reduced-motion:reduce){*,*::before{animation:none!important;transition:none!important}}
 </style></head><body>
-<div id="login" hidden><section class="hero"><img src="logo.jpg" alt="MSEUF Concert Singers logo"><h1>MSEUF Concert Singers Calendar</h1><div class="lines"></div></section><section class="lr"><div class="lcard" id="lcard"></div></section></div>
+<div id="login" hidden><section class="hero"><img src="logo.jpg" alt="MSEUF Concert Singers logo"><h1>MSEUF Concert Singers Calendar</h1><div class="lines"></div></section><section class="lr"><div class="lcard" id="lcard"><h2 id="ltitle"></h2><div class="seg" id="lseg" data-active="trainee"><button type="button" data-g="trainee">Trainee</button><button type="button" data-g="staff">Master / Senior Member</button></div><div id="lbody"></div></div></section></div>
 <div id="shell" hidden><header><img class="logo" src="logo.jpg" alt="" onerror="this.remove()"><div><h1>MSEUF Concert Singers Calendar</h1></div><div id="who"></div></header>
 <nav id="tabs"></nav><div id="bar"></div><main id="app"></main></div><dialog id="dlg"></dialog><div id="toast" role="status"></div>
 
@@ -96,6 +127,23 @@ let f={date:iso(tmr),start:"16:00",end:"18:00",aud:"trainee"};
 function toast(m){const t=$("#toast");t.textContent=m;t.className="show";clearTimeout(toast.t);toast.t=setTimeout(()=>t.className="",3500)}
 const openDlg=h=>{$("#dlg").innerHTML=h;$("#dlg").showModal()},closeDlg=()=>$("#dlg").close();
 const fail=e=>toast(e.message||String(e));
+const reduceMotion=matchMedia("(prefers-reduced-motion: reduce)").matches,wait=ms=>new Promise(r=>setTimeout(r,ms));
+function morph(el,change){
+  if(reduceMotion)return change();
+  const h0=el.offsetHeight;change();const h1=el.offsetHeight;if(Math.abs(h0-h1)<2)return;
+  el.style.height=h0+"px";el.style.overflow="hidden";el.getBoundingClientRect();
+  el.style.transition="height .5s cubic-bezier(.22,.8,.24,1)";el.style.height=h1+"px";
+  setTimeout(()=>{el.style.height=el.style.overflow=el.style.transition=""},560);
+}
+let enterTimer;
+function countUp(m){m.querySelectorAll(".stat b").forEach(el=>{const t=el.textContent.trim(),n=parseFloat(t);if(Number.isNaN(n)||!/^\d+$/.test(t))return;const st=performance.now();
+  const tick=x=>{const k=Math.min(1,(x-st)/850);el.textContent=Math.round(n*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(tick);else el.textContent=t};requestAnimationFrame(tick)})}
+function animateMain(){
+  if(reduceMotion)return;const m=$("#app");m.classList.remove("enter");
+  [...m.children].forEach((el,i)=>el.style.setProperty("--i",i));
+  m.querySelectorAll(".stat,.card,.day,.line").forEach((el,i)=>el.style.setProperty("--j",Math.min(i,14)));
+  void m.offsetWidth;m.classList.add("enter");clearTimeout(enterTimer);enterTimer=setTimeout(()=>m.classList.remove("enter"),1900);countUp(m);
+}
 
 // ---------- availability logic ----------
 function status(p,ev){
@@ -110,7 +158,7 @@ const byName=(a,b)=>(a.name||"").localeCompare(b.name||"");
 // ---------- data ----------
 db.collection("people").onSnapshot(s=>{people=s.docs.map(d=>({id:d.id,...d.data()})).sort(byName);render()},fail);
 db.collection("events").onSnapshot(s=>{events=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));render()},fail);
-let viewer=localStorage.getItem("viewer")==="1",lt="trainee",lmode="in",lmsg="";
+let viewer=localStorage.getItem("viewer")==="1",lt="trainee",lmode="in",lmsg="",loginDrawn=false,wasIn=false;
 auth.onAuthStateChanged(async u=>{
   user=u;role=null;if(unsubStaff){unsubStaff();unsubStaff=null}
   if(u){
@@ -120,18 +168,26 @@ auth.onAuthStateChanged(async u=>{
       else if(OWNERS.includes(em)){await ref.set({role:"mi"});role="mi"}
     }catch(e){fail(e)}
     if(role)unsubStaff=db.collection("staff").onSnapshot(s=>{staffList=s.docs.map(d=>({id:d.id,...d.data()}));render()},fail);
-    else{lt="staff";lmsg=em+" is not on the staff list. Ask a Master of Initiation to add you.";auth.signOut()}
+    else{lt="staff";lmsg=em+" is not on the staff list. Ask a Master of Initiation to add you.";loginDrawn=false;auth.signOut()}
   }
   render();
 });
 const nice=x=>({"auth/invalid-credential":"Wrong email or password.","auth/email-already-in-use":"That email already has an account. Sign in instead.","auth/weak-password":"Password needs at least 6 characters.","auth/too-many-requests":"Too many tries. Wait a bit and try again."})[x.code]||x.message;
 function renderLogin(){
-  const sw=(k,l)=>`<button class="${lt===k?"on":""}" onclick="lt='${k}';lmsg='';renderLogin()">${l}</button>`;
-  $("#lcard").innerHTML=`<h2>${lt==="trainee"?"Welcome, trainee":lmode==="up"?"Create account":"Sign in"}</h2><div class="seg">${sw("trainee","Trainee")}${sw("staff","Master / Senior Member")}</div>`+
-  (lt==="trainee"?`<p class="sub">No login needed.</p><button class="gold wide" onclick="enterViewer()">Continue</button>`:
+  $("#ltitle").textContent=lt==="trainee"?"Welcome, trainee":lmode==="up"?"Create account":"Sign in";
+  $("#lseg").dataset.active=lt;
+  document.querySelectorAll("#lseg button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.g===lt)));
+  $("#lbody").innerHTML=(lt==="trainee"?`<p class="sub">No login needed.</p><button class="gold wide" onclick="enterViewer()">Continue</button>`:
   `<form onsubmit="staffAuth(event)"><label>Email<input name="email" type="email" placeholder="you@example.com" required autocomplete="email"></label><label>Password<input name="password" type="password" minlength="6" placeholder="At least 6 characters" required autocomplete="${lmode==="up"?"new-password":"current-password"}"></label><button class="gold wide">${lmode==="up"?"Create account":"Sign in"}</button></form>
-  <div class="row between"><span>${lmode==="up"?"Have an account?":"New here?"} <a href="#" onclick="lmode='${lmode==="up"?"in":"up"}';lmsg='';renderLogin();return false">${lmode==="up"?"Sign in":"Create an account"}</a></span><a href="#" onclick="resetPw();return false">Forgot password?</a></div><p class="hint">Only Masters of Initiation, senior members and members on the staff list can get in.</p>`)+`<p class="err" id="lm" role="alert">${esc(lmsg)}</p>`;
+  <div class="row between"><span>${lmode==="up"?"Have an account?":"New here?"} <a href="#" onclick="swapLogin(()=>{lmode='${lmode==="up"?"in":"up"}';lmsg='';renderLogin()});return false">${lmode==="up"?"Sign in":"Create an account"}</a></span><a href="#" onclick="resetPw();return false">Forgot password?</a></div><p class="hint">Only Masters of Initiation, senior members and members on the staff list can get in.</p>`)+`<p class="err" id="lm" role="alert">${esc(lmsg)}</p>`;
+  loginDrawn=true;
 }
+let swapBusy=false;
+async function swapLogin(change){
+  if(reduceMotion)return change();if(swapBusy)return;swapBusy=true;
+  const c=$("#lcard");c.classList.add("swap-out");await wait(170);morph(c,change);await wait(30);c.classList.remove("swap-out");await wait(400);swapBusy=false;
+}
+document.querySelectorAll("#lseg button").forEach(b=>b.onclick=()=>{if(b.dataset.g!==lt)swapLogin(()=>{lt=b.dataset.g;lmsg="";renderLogin()})});
 function staffAuth(e){e.preventDefault();const d=Object.fromEntries(new FormData(e.target));$("#lm").textContent="";
   (lmode==="up"?auth.createUserWithEmailAndPassword(d.email,d.password):auth.signInWithEmailAndPassword(d.email,d.password)).catch(x=>$("#lm").textContent=nice(x))}
 function resetPw(){const em=$("#lcard [name=email]").value.trim();if(!em)return $("#lm").textContent="Type your email first.";
@@ -140,10 +196,17 @@ function enterViewer(){viewer=true;localStorage.setItem("viewer","1");render()}
 function leave(){viewer=false;localStorage.removeItem("viewer");lt=role?"staff":"trainee";role?auth.signOut():render()}
 
 // ---------- render ----------
-const go=k=>{tab=k;render()};
+let navBusy=false;
+async function go(k){
+  if(k===tab||navBusy)return;
+  if(reduceMotion){tab=k;return render()}
+  navBusy=true;const a=$("#app");a.classList.add("leaving");await wait(190);
+  tab=k;render();a.classList.remove("leaving");animateMain();navBusy=false;
+}
 function render(){
   const inApp=!!role||viewer;$("#login").hidden=inApp;$("#shell").hidden=!inApp;
-  if(!inApp)return renderLogin();
+  if(!inApp){wasIn=false;if(!loginDrawn)renderLogin();return}
+  loginDrawn=false;
   const T=role?[["events","Events"],["people","People"],["finder","Who’s free"],["access","Access"]]:[["events","Events"],["mine","My schedule"],["finder","Who’s free"]];
   if(!T.some(t=>t[0]===tab))tab="events";
   $("#who").innerHTML=role?`<div class="who"><b>${esc(user.email)}</b><small>${ROLES[role]}</small></div><button onclick="leave()">Sign out</button>`:`<div class="who"><b>Trainee view</b><small>No login needed</small></div><button onclick="leave()">Staff sign in</button>`;
@@ -151,6 +214,7 @@ function render(){
   $("#bar").innerHTML=`<label>I am: <select onchange="setMe(this.value)"><option value="">— choose your name —</option>${people.map(p=>`<option value="${p.id}" ${p.id===me?"selected":""}>${esc(p.name)}</option>`).join("")}</select></label><button onclick="addPerson()">I’m not listed</button>`;
   $("#app").innerHTML=({events:evView,mine:()=>schedView(me),people:peopleView,finder:finderView,access:accessView})[tab]();
   if(tab==="finder")finderRes();
+  if(!wasIn){wasIn=true;animateMain()}
 }
 function setMe(v){me=v;localStorage.setItem("me",v);render()}
 
