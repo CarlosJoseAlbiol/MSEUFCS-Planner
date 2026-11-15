@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MSEUF Concert Singers · Planner</title>
+<title>MSEUF Concert Singers Calendar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -60,8 +60,8 @@ label{display:block;margin:8px 0;font-size:13px;color:var(--mut)}#bar label,.row
 @media(max-width:800px){#login{grid-template-columns:1fr}.lr{border-left:0;min-height:0}.hero img{width:170px;height:170px}.hero h1{font-size:36px}#who .who{display:none}}
 @media(prefers-reduced-motion:reduce){#toast{transition:none}}
 </style></head><body>
-<div id="login" hidden><section class="hero"><img src="logo.jpg" alt="MSEUF Concert Singers logo"><h1>Availability Planner</h1><div class="lines"></div><p>Check who is free for rehearsals and events, and keep class schedules up to date.</p></section><section class="lr"><div class="lcard" id="lcard"></div></section></div>
-<div id="shell" hidden><header><img class="logo" src="logo.jpg" alt="" onerror="this.remove()"><div><h1>MSEUF Concert Singers</h1><p>Availability Planner</p></div><div id="who"></div></header>
+<div id="login" hidden><section class="hero"><img src="logo.jpg" alt="MSEUF Concert Singers logo"><h1>MSEUF Concert Singers Calendar</h1><div class="lines"></div></section><section class="lr"><div class="lcard" id="lcard"></div></section></div>
+<div id="shell" hidden><header><img class="logo" src="logo.jpg" alt="" onerror="this.remove()"><div><h1>MSEUF Concert Singers Calendar</h1></div><div id="who"></div></header>
 <nav id="tabs"></nav><div id="bar"></div><main id="app"></main></div><dialog id="dlg"></dialog><div id="toast" role="status"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -69,7 +69,7 @@ label{display:block;margin:8px 0;font-size:13px;color:var(--mut)}#bar label,.row
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 // ====== 1. PASTE YOUR FIREBASE CONFIG (Project settings → Your apps → Web app) ======
-const firebaseConfig={apiKey:"YOUR_API_KEY",authDomain:"YOUR_PROJECT.firebaseapp.com",projectId:"YOUR_PROJECT",storageBucket:"YOUR_PROJECT.appspot.com",messagingSenderId:"000000000000",appId:"YOUR_APP_ID"};
+const firebaseConfig={apiKey:"AIzaSyAVmZRNPRF5vozc9q3vSwNQjOSDRYtLuxI",authDomain:"mseuf-grading-sheet.firebaseapp.com",projectId:"mseuf-grading-sheet",storageBucket:"mseuf-grading-sheet.firebasestorage.app",messagingSenderId:"548651789448",appId:"1:548651789448:web:94af671a75e00dff14033d"};
 // ====== 2. First Master of Initiation (can add other staff in the Access tab). Use lowercase Gmail ======
 const OWNERS=["oblefiascarlos@gmail.com"];
 
@@ -128,7 +128,7 @@ const nice=x=>({"auth/invalid-credential":"Wrong email or password.","auth/email
 function renderLogin(){
   const sw=(k,l)=>`<button class="${lt===k?"on":""}" onclick="lt='${k}';lmsg='';renderLogin()">${l}</button>`;
   $("#lcard").innerHTML=`<h2>${lt==="trainee"?"Welcome, trainee":lmode==="up"?"Create account":"Sign in"}</h2><div class="seg">${sw("trainee","Trainee")}${sw("staff","Master / Senior Member")}</div>`+
-  (lt==="trainee"?`<p class="sub">No login needed. Open the planner to update your class schedule and tell us if you’re available for rehearsals and events.</p><button class="gold wide" onclick="enterViewer()">Continue to planner</button>`:
+  (lt==="trainee"?`<p class="sub">No login needed.</p><button class="gold wide" onclick="enterViewer()">Continue</button>`:
   `<form onsubmit="staffAuth(event)"><label>Email<input name="email" type="email" placeholder="you@example.com" required autocomplete="email"></label><label>Password<input name="password" type="password" minlength="6" placeholder="At least 6 characters" required autocomplete="${lmode==="up"?"new-password":"current-password"}"></label><button class="gold wide">${lmode==="up"?"Create account":"Sign in"}</button></form>
   <div class="row between"><span>${lmode==="up"?"Have an account?":"New here?"} <a href="#" onclick="lmode='${lmode==="up"?"in":"up"}';lmsg='';renderLogin();return false">${lmode==="up"?"Sign in":"Create an account"}</a></span><a href="#" onclick="resetPw();return false">Forgot password?</a></div><p class="hint">Only Masters of Initiation, senior members and members on the staff list can get in.</p>`)+`<p class="err" id="lm" role="alert">${esc(lmsg)}</p>`;
 }
@@ -159,7 +159,7 @@ function lst(t,a){return a.length?`<h4>${t} (${a.length})</h4><ul>${a.map(x=>`<l
 function evView(){
   const t=iso(new Date()),list=events.filter(e=>showPast||e.date>=t),mp=people.find(p=>p.id===me);
   const up=events.filter(e=>e.date>=t),nx=up[0];
-  return `<div class="row"><div><h2>Events and rehearsals</h2><p class="sub">Respond to what’s coming up and see who’s free.</p></div><span class="sp"></span>${role?`<button class="pri" onclick="evDlg()">New event</button>`:""}</div><div class="lines"></div>
+  return `<div class="row"><div><h2>Events and rehearsals</h2></div><span class="sp"></span>${role?`<button class="pri" onclick="evDlg()">New event</button>`:""}</div><div class="lines"></div>
   <div class="stats"><div class="stat"><b>${up.length}</b>Upcoming events</div><div class="stat"><b>${people.filter(p=>p.role==="trainee").length}</b>Trainees listed</div><div class="stat"><b>${nx?new Date(nx.date+"T00:00").toLocaleDateString("en-PH",{month:"short",day:"numeric"}):"—"}</b>Next event</div></div>
   <label><input type="checkbox" ${showPast?"checked":""} onchange="showPast=this.checked;render()"> Show past events</label>`+
   (list.map(ev=>{
