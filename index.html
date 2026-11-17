@@ -306,7 +306,7 @@ function saveInfo(e,id){e.preventDefault();const d=Object.fromEntries(new FormDa
 function delPerson(id){if(confirm("Delete this person and their schedule?")){db.collection("people").doc(id).delete().then(()=>{viewPid="";if(me===id)setMe("")}).catch(fail)}}
 const setRole=(id,v)=>db.collection("people").doc(id).update({role:v}).catch(fail);
 function peopleView(){
-  return `<div class="row"><h2>People (${people.length})</h2><span class="sp"></span><button onclick="addPerson()">+ Add person</button><button onclick="seed()">Import starter schedules</button></div>`+
+  return `<div class="row"><h2>Participants (${people.length})</h2><span class="sp"></span><button onclick="addPerson()">+ Add person</button><button onclick="seed()">Import starter schedules</button></div>`+
   people.map(p=>`<div class="row line ${p.id===viewPid?"sel":""}"><button class="link" onclick="viewPid='${p.id}';render()">${esc(p.name)}</button><small>${esc(p.course||"")}</small><span class="sp"></span><select onchange="setRole('${p.id}',this.value)" aria-label="Role">${opts(ROLES,p.role)}</select><small>${(p.classes||[]).length} classes</small></div>`).join("")+
   (viewPid?`<hr>`+schedView(viewPid):"");
 }
