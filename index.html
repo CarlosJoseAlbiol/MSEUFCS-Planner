@@ -2,30 +2,33 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MSEUF Concert Singers Calendar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#1a0408;--side:#230910;--s1:#2d0d14;--s2:#3b1620;--line:rgba(233,216,166,.15);--line2:rgba(233,216,166,.3);--ink:#f6ede1;--mut:#b8a39b;--gold:#e6c364;--gold2:#c79a2e;--ok:#8fd6a8;--bad:#ff8c7c;--warn:#ffc266;--serif:"Instrument Serif",Georgia,serif;--ease:cubic-bezier(.22,.8,.24,1)}
+:root{--bg:#250305;--side:rgba(26,3,5,.9);--s1:rgba(43,5,7,.88);--s2:rgba(71,4,8,.85);--line:rgba(212,166,42,.3);--line2:rgba(238,197,82,.45);--ink:#f6ece8;--mut:#c4aaa3;--gold:#f0c53f;--gold2:#c99a1c;--ok:#7fd9a1;--bad:#ff8f86;--warn:#ffc266;--serif:"Cormorant Garamond",Georgia,serif;--ease:cubic-bezier(.22,.8,.24,1)}
 *{box-sizing:border-box}[hidden]{display:none!important}
-body{margin:0;min-height:100vh;font:15px/1.5 "Hanken Grotesk",system-ui,sans-serif;color:var(--ink);background:var(--bg)}
-a{color:var(--gold)}h2{font:400 46px/1 var(--serif);margin:0}h3{font:400 26px/1.1 var(--serif);margin:0}h4{margin:12px 0 4px;font-size:13px;color:var(--gold)}
+body{margin:0;min-height:100vh;font:15px/1.5 Figtree,system-ui,sans-serif;color:var(--ink);background:radial-gradient(120% 90% at 20% 0%,#751019 0%,#4a0a10 40%,#250305 100%) fixed}
+body::after{content:"";position:fixed;right:-120px;bottom:-60px;width:520px;height:520px;background:url(logo.jpg) center/cover;border-radius:50%;opacity:.15;mix-blend-mode:screen;pointer-events:none;animation:clefFloat 10s ease-in-out infinite}
+@keyframes clefFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-22px) rotate(1deg)}}
+#login,#shell{position:relative;z-index:1}
+a{color:var(--gold)}h2{font:600 48px/1.05 var(--serif);color:var(--gold);margin:0}h3{font:600 28px/1.1 var(--serif);color:var(--gold);margin:0}h4{margin:12px 0 4px;font-size:13px;color:var(--gold)}
 h3.sec{font-size:24px;color:var(--mut);margin:34px 0 2px}
 small,.hint{color:var(--mut)}.sub{color:var(--mut);margin:6px 0 14px}.empty{color:var(--mut);padding:36px 0}.err{color:var(--bad);min-height:1.2em;margin:12px 0 0}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0}.row>.sp,.sp{flex:1}.between{justify-content:space-between;font-size:14px}
-button{font:inherit;font-weight:600;color:var(--ink);background:transparent;border:1px solid var(--line2);border-radius:999px;padding:7px 16px;cursor:pointer;transition:background .2s,color .2s,border-color .2s,transform .15s,box-shadow .2s}
+button{font:inherit;font-weight:600;color:var(--gold);background:transparent;border:1px solid var(--line2);border-radius:999px;padding:7px 16px;cursor:pointer;transition:background .2s,color .2s,border-color .2s,transform .15s,box-shadow .2s}
 button:hover{border-color:var(--gold);color:var(--gold)}
-button.pri,button.gold{background:var(--gold);color:#2a0a10;border-color:var(--gold);padding:10px 22px}
-button.pri:hover,button.gold:hover{background:#f0d27a;color:#2a0a10;box-shadow:0 6px 24px rgba(230,195,100,.25);transform:translateY(-1px)}
+button.pri,button.gold{background:linear-gradient(#f7da72,#d9a82a);color:#2a0305;border-color:#d9a82a;padding:10px 22px}
+button.pri:hover,button.gold:hover{background:linear-gradient(#fbe590,#e5b83c);color:#2a0305;box-shadow:0 6px 22px rgba(219,150,0,.4);transform:translateY(-1px)}
 button.wide{width:100%;padding:13px;margin-top:8px}button.link{border:0;padding:0;text-align:left}
-input,select,textarea{font:inherit;color:var(--ink);background:#150307;border:1px solid var(--line2);border-radius:10px;padding:9px 12px;max-width:100%}
+input,select,textarea{font:inherit;color:var(--ink);background:#1c0305;border:1px solid var(--line2);border-radius:10px;padding:9px 12px;max-width:100%}
 input::placeholder{color:#8a746e}input[type=checkbox]{accent-color:var(--gold)}input[type=date],input[type=time]{color-scheme:dark}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 label{display:block;margin:8px 0;font-size:13px;color:var(--mut)}.row label{display:inline-flex;gap:6px;align-items:center;margin:0}
 /* login */
 #login{height:100vh;height:100dvh;display:grid;grid-template-columns:1fr 1fr}
-.hero{position:relative;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:clamp(14px,3vh,28px);padding:clamp(24px,4vw,56px);overflow:hidden;background:linear-gradient(160deg,#8f2638 0%,#4a0f1b 55%,#1a0408 100%)}
+.hero{position:relative;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:clamp(14px,3vh,28px);padding:clamp(24px,4vw,56px);overflow:hidden;border-right:1px solid var(--line)}
 .hero img{width:clamp(130px,28vh,250px);height:clamp(130px,28vh,250px);border-radius:50%;object-fit:cover;border:2px solid var(--gold2)}
-.hero h1{font:400 clamp(34px,min(5vw,7vh),68px)/1.05 var(--serif);margin:0;max-width:11ch}.hero .lines,.hero p{display:none}
-.lr{display:grid;place-items:center;padding:24px;height:100%;overflow:auto}.lcard{width:min(400px,100%)}.lcard h2{font-size:42px}
+.hero h1{font:600 clamp(38px,min(5vw,7vh),72px)/1.02 var(--serif);color:var(--gold);margin:0;max-width:12ch}.hero .lines,.hero p{display:none}
+.lr{display:grid;place-items:center;padding:24px;height:100%;overflow:auto}.lcard{width:min(400px,100%)}.lcard h2{font-size:46px}
 .seg{position:relative;display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line);margin:18px 0 22px}
 .seg button{border:0;border-radius:0;background:none;padding:12px 4px;color:var(--mut)}.seg button[aria-pressed=true]{color:var(--ink)}
 .seg::before{content:"";position:absolute;left:0;bottom:-1px;height:2px;width:50%;background:var(--gold);transition:transform .45s var(--ease)}
@@ -35,7 +38,7 @@ label{display:block;margin:8px 0;font-size:13px;color:var(--mut)}.row label{disp
 #shell{display:grid;grid-template-columns:252px 1fr;min-height:100vh}
 #side{position:sticky;top:0;height:100vh;height:100dvh;overflow-y:auto;display:flex;flex-direction:column;gap:20px;padding:22px 16px;background:var(--side);border-right:1px solid var(--line)}
 .brand{display:flex;gap:12px;align-items:center;padding:0 6px}.logo{width:48px;height:48px;border-radius:50%;object-fit:cover;border:1.5px solid var(--gold2);flex:none}
-.brand b{display:block;font:400 24px/1 var(--serif)}.brand span{font-size:12px;color:var(--mut)}
+.brand b{display:block;font:700 26px/1 var(--serif);color:var(--gold)}.brand span{font-size:12px;color:var(--mut)}
 nav{display:flex;flex-direction:column;gap:2px}
 nav button{position:relative;display:flex;gap:12px;align-items:center;border:0;border-radius:12px;padding:11px 12px;color:var(--mut);text-align:left}
 nav button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
@@ -48,9 +51,9 @@ main{width:100%;min-width:0;max-width:1400px;margin:0 auto;padding:clamp(20px,3.
 .pagehead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:26px}
 /* events */
 .ev{display:grid;grid-template-columns:76px 1fr;gap:18px;padding:20px 2px;border-top:1px solid var(--line)}
-.ev .dt{text-align:center}.ev .dt b{display:block;font:400 44px/1 var(--serif);color:var(--gold)}.ev .dt span{font-size:13px;color:var(--mut)}
+.ev .dt{text-align:center}.ev .dt b{display:block;font:600 48px/1 var(--serif);color:var(--gold)}.ev .dt span{font-size:13px;color:var(--mut)}
 .ev .meta{margin:2px 0 0;color:var(--mut)}.ev p{margin:6px 0}
-.ev.big{grid-template-columns:130px 1fr;padding:30px;border:1px solid var(--line2);border-radius:24px;background:linear-gradient(135deg,#63172a 0%,#2d0d14 70%)}
+.ev.big{grid-template-columns:130px 1fr;padding:30px;border:1px solid var(--line2);border-radius:24px;background:linear-gradient(135deg,rgba(122,18,25,.75) 0%,rgba(43,5,7,.92) 70%)}
 .ev.big .dt b{font-size:92px}.ev.big h3{font-size:46px}.ev.big .meta{font-size:16px}
 .rel{color:var(--gold);font-size:13px;font-weight:600}
 .meter{display:flex;gap:3px;height:8px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.08);margin:14px 0 8px}
@@ -84,7 +87,7 @@ dialog input:not([type=checkbox]),dialog select,dialog textarea{width:100%;displ
 @keyframes glowS{0%,100%{box-shadow:0 0 0 0 rgba(230,195,100,0)}50%{box-shadow:0 0 14px 3px rgba(230,195,100,.5)}}
 @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
-.up .bt{display:inline-block;border-radius:999px;padding:10px 22px;background:var(--gold);color:#2a0a10;font-weight:600;cursor:pointer}
+.up .bt{display:inline-block;border-radius:999px;padding:10px 22px;background:linear-gradient(#f7da72,#d9a82a);color:#2a0a10;font-weight:600;cursor:pointer}
 .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.thumb{height:110px;border-radius:10px;border:1px solid var(--line2);cursor:pointer}
 /* motion */
 @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
@@ -172,7 +175,9 @@ function status(p,ev){
 const byName=(a,b)=>(a.name||"").localeCompare(b.name||"");
 
 // ---------- data ----------
-db.collection("people").onSnapshot(s=>{people=s.docs.map(d=>({id:d.id,...d.data()})).sort(byName);render()},fail);
+let seeding=false;
+db.collection("people").onSnapshot(s=>{people=s.docs.map(d=>({id:d.id,...d.data()})).sort(byName);render();
+  if(!s.docs.length&&!s.metadata.fromCache&&!seeding){seeding=true;seed().finally(()=>seeding=false)}},fail);
 db.collection("events").onSnapshot(s=>{events=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));render()},fail);
 let viewer=localStorage.getItem("viewer")==="1",lt="trainee",lmode="in",lmsg="",loginDrawn=false,wasIn=false,tryingLogin=false;
 auth.onAuthStateChanged(async u=>{
@@ -221,12 +226,12 @@ function render(){
   const inApp=!!role||viewer;$("#login").hidden=inApp;$("#shell").hidden=!inApp;
   if(!inApp){wasIn=false;if(!loginDrawn)renderLogin();return}
   loginDrawn=false;
-  const T=role?[["events","Events"],["cal","Calendar"],["people","People"],["finder","Who’s free"]]:[["events","Events"],["cal","Calendar"],["mine","My schedule"],["finder","Who’s free"]];
+  const T=role?[["events","Events"],["cal","Calendar"],["people","People"],["finder","Who’s free"]]:[["events","Events"],["cal","Calendar"],["mine","Schedules"],["finder","Who’s free"]];
   if(!T.some(t=>t[0]===tab))tab="events";
   $("#who").innerHTML=role?`<div class="who"><b>${esc(profile.name||user.email)}</b><small>${ROLE_AUTH[role]}</small></div><button onclick="leave()">Sign out</button>`:`<div class="who"><b>Trainee view</b><small>No login needed</small></div><button onclick="leave()">MI / Senior Members Login</button>`;
   $("#tabs").innerHTML=T.map(([k,l])=>`<button class="${k===tab?"on":""}" onclick="go('${k}')"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>${l}</button>`).join("");
   $("#bar").innerHTML=`<label>I am: <select onchange="setMe(this.value)"><option value="">— choose your name —</option>${people.map(p=>`<option value="${p.id}" ${p.id===me?"selected":""}>${esc(p.name)}</option>`).join("")}</select></label><button onclick="addPerson()">I’m not listed</button>`;
-  $("#app").innerHTML=({events:evView,cal:calView,mine:()=>schedView(me),people:peopleView,finder:finderView})[tab]();
+  $("#app").innerHTML=({events:evView,cal:calView,mine:schedPage,people:peopleView,finder:finderView})[tab]();
   if(tab==="finder")finderRes();
   if(!wasIn){wasIn=true;animateMain()}
 }
@@ -275,10 +280,13 @@ function delEv(id){if(confirm("Delete this event?"))db.collection("events").doc(
 // ---------- schedules ----------
 function schedView(pid){
   const p=people.find(x=>x.id===pid);
-  if(!p)return `<p class="empty">Choose your name at the top (or tap “I’m not listed”) to see and edit your class schedule.</p>`;
+  if(!p)return `<p class="empty">Choose a name to see a class schedule, or tap “I’m not listed” to add yourself.</p>`;
+  const ed=!!role||pid===me,g=weekGrid(p);
   const days=[1,2,3,4,5,6].map(d=>({d,l:(p.classes||[]).filter(c=>c.days.includes(d)).sort((a,b)=>t2m(a.start)-t2m(b.start))}));
-  return `<section><div class="row"><h2>${esc(p.name)}</h2><small>${esc(p.course||"")} · ${ROLES[p.role]||""}</small><span class="sp"></span><button class="pri" onclick="classDlg('${p.id}')">+ Add class</button>${role?`<button onclick="editPerson('${p.id}')">Edit info</button><button onclick="delPerson('${p.id}')">Delete</button>`:""}</div>`+
-  days.map(({d,l})=>`<div class="day"><b>${DAYS[d]}</b>${l.map(c=>`<div class="cls"><span>${t12(c.start)}–${t12(c.end)}</span><b>${esc(c.subject)}</b><small>${esc(c.room)}</small><span><button onclick="classDlg('${p.id}','${c.id}')">Edit</button> <button onclick="delClass('${p.id}','${c.id}')" aria-label="Delete class">✕</button></span></div>`).join("")||`<div><small>No class</small></div>`}</div>`).join("")+uploadRow(p.id)+(role?picsSection(p.id):"")+`</section>`;
+  return `<section><div class="row"><h3>${esc(p.name)}</h3><small>${esc(p.course||"")} · ${ROLES[p.role]||""}</small><span class="sp"></span>${ed?`<button class="pri" onclick="classDlg('${p.id}')">+ Add class</button>`:""}${role?`<button onclick="editPerson('${p.id}')">Edit info</button><button onclick="delPerson('${p.id}')">Delete</button>`:""}</div>`+
+  weekNav(g.rng)+g.html+`<h3 class="sec">Class list</h3>`+
+  days.map(({d,l})=>`<div class="day"><b>${DAYS[d]}</b>${l.map(c=>`<div class="cls"><span>${t12(c.start)}–${t12(c.end)}</span><b>${esc(c.subject)}</b><small>${esc(c.room)}</small>${ed?`<span><button onclick="classDlg('${p.id}','${c.id}')">Edit</button> <button onclick="delClass('${p.id}','${c.id}')" aria-label="Delete class">✕</button></span>`:""}</div>`).join("")||`<div><small>No class</small></div>`}</div>`).join("")+
+  (ed?uploadRow(p.id):"")+(role?picsSection(p.id):"")+`</section>`;
 }
 function classDlg(pid,cid){
   const p=people.find(x=>x.id===pid),c=(p.classes||[]).find(x=>x.id===cid)||{subject:"",days:[],start:"08:00",end:"09:00",room:""};
@@ -319,13 +327,13 @@ function peopleView(){
 }
 
 // ---------- weekly calendar + schedule pictures ----------
-let calPid="",calWeek=0,calA=420,picCache={};
+let calPid="",schedPid="",calWeek=0,calA=420,picCache={};
 const COLORS=["#6ea8ff","#7fd9a1","#ff8fb1","#f0c53f","#b794f6","#5fd3d3","#ffa56e","#9fd356"];
 const hue=t=>{let h=0;for(const c of t)h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS.length]};
 const mondayOf=o=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7)+o*7);return d};
 const hm=m=>String(Math.floor(m/60)).padStart(2,"0")+":00";
-function calView(){
-  const pid=calPid||me,p=people.find(x=>x.id===pid),cls=p?p.classes||[]:[];
+function weekGrid(p){
+  const cls=p?p.classes||[]:[];
   const mon=mondayOf(calWeek),days=[...Array(7)].map((_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d});
   const ds=days.map(iso),today=iso(new Date()),evs=events.filter(e=>ds.includes(e.date));
   let a=420,b=1260;
@@ -337,18 +345,25 @@ function calView(){
     const dow=d.getDay(),s=ds[i];
     const cb=cls.filter(c=>c.days.includes(dow)).map(c=>`<div class="blk" style="top:${t2m(c.start)-a}px;height:${t2m(c.end)-t2m(c.start)}px;--c:${hue(c.subject)}"><b>${esc(c.subject)}</b>${t12(c.start)}–${t12(c.end)}${c.room?"<br>"+esc(c.room):""}</div>`).join("");
     const eb=evs.filter(e=>e.date===s).map(e=>{const clash=cls.some(c=>c.days.includes(dow)&&t2m(c.start)<t2m(e.end)&&t2m(e.start)<t2m(c.end));
-      return `<div class="blk ev ${clash?"clash":""}" style="top:${t2m(e.start)-a}px;height:${t2m(e.end)-t2m(e.start)}px" title="${clash?"Conflicts with a class":""}"><b>${esc(e.title)}</b>${t12(e.start)}–${t12(e.end)}${clash?"<br>Class conflict":""}</div>`}).join("");
+      return `<div class="blk ev ${clash?"clash":""}" style="top:${t2m(e.start)-a}px;height:${t2m(e.end)-t2m(e.start)}px"><b>${esc(e.title)}</b>${t12(e.start)}–${t12(e.end)}${clash?"<br>Class conflict":""}</div>`}).join("");
     const nl=s===today&&nm>=a&&nm<=b?`<div class="now" id="nowline" style="top:${nm-a}px"></div>`:"";
     return `<div class="col ${s===today?"today":""}" style="height:${H}px">${cb}${eb}${nl}</div>`;
   }).join("");
   const heads=days.map((d,i)=>`<div class="h ${ds[i]===today?"today":""}">${DAYS[d.getDay()]}<small>${d.toLocaleDateString("en-PH",{month:"short",day:"numeric"})}</small></div>`).join("");
-  const rng=days[0].toLocaleDateString("en-PH",{month:"short",day:"numeric"})+" – "+days[6].toLocaleDateString("en-PH",{month:"short",day:"numeric",year:"numeric"});
-  return `<div class="row"><h2>Weekly calendar</h2><span class="live">Live</span><span class="sp"></span>
-    <select onchange="calPid=this.value;render()" aria-label="Whose schedule"><option value="">— choose a name —</option>${people.map(x=>`<option value="${x.id}" ${x.id===pid?"selected":""}>${esc(x.name)}</option>`).join("")}</select></div>
-  <div class="row"><button onclick="calWeek--;render()">‹ Prev</button><button onclick="calWeek=0;render()">This week</button><button onclick="calWeek++;render()">Next ›</button><b>${rng}</b></div>
-  ${p?`<p class="hint">${esc(p.name)}${p.course?" · "+esc(p.course):""}. Gold blocks are choir events; a red outline means it clashes with a class.</p>`:`<p class="hint">Choose a name to see class schedule. Choir events show for everyone.</p>`}
-  <div class="calwrap"><div class="cal">${heads.replace(/^/,'<div class="h"></div>')}<div class="tm" style="height:${H}px">${times.join("")}</div>${cols}</div></div>
-  ${p?uploadRow(p.id)+(role?picsSection(p.id):""):""}`;
+  const f=o=>days[o].toLocaleDateString("en-PH",{month:"short",day:"numeric"});
+  return {rng:f(0)+" – "+days[6].toLocaleDateString("en-PH",{month:"short",day:"numeric",year:"numeric"}),
+    html:`<div class="calwrap"><div class="cal"><div class="h"></div>${heads}<div class="tm" style="height:${H}px">${times.join("")}</div>${cols}</div></div>`};
+}
+const weekNav=r=>`<div class="row"><button onclick="calWeek--;render()">‹ Prev</button><button onclick="calWeek=0;render()">This week</button><button onclick="calWeek++;render()">Next ›</button><b>${r}</b><span class="live">Live</span></div>`;
+const personSelect=(pid,fn)=>`<select onchange="${fn}" aria-label="Whose schedule"><option value="">— choose a name —</option>${people.map(x=>`<option value="${x.id}" ${x.id===pid?"selected":""}>${esc(x.name)}</option>`).join("")}</select>`;
+function calView(){
+  const pid=calPid||me,p=people.find(x=>x.id===pid),g=weekGrid(p);
+  return `<div class="pagehead"><h2>Weekly calendar</h2><span class="sp"></span>${personSelect(pid,"calPid=this.value;render()")}</div>${weekNav(g.rng)}
+  ${p?`<p class="hint">${esc(p.name)}${p.course?" · "+esc(p.course):""}. Gold blocks are choir events; a red outline means it clashes with a class.</p>`:`<p class="hint">Choose a name to see a class schedule. Choir events show for everyone.</p>`}${g.html}`;
+}
+function schedPage(){
+  const pid=schedPid||me;
+  return `<div class="pagehead"><h2>Schedules</h2><span class="sp"></span>${personSelect(pid,"schedPid=this.value;render()")}</div>${schedView(pid)}`;
 }
 setInterval(()=>{const n=$("#nowline");if(n){const d=new Date();n.style.top=(d.getHours()*60+d.getMinutes()-calA)+"px"}},30000);
 
