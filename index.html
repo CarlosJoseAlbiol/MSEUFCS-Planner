@@ -296,7 +296,7 @@ function resp(id,v){db.collection("events").doc(id).update({["responses."+me]:v=
 function evDlg(id,pre){
   const e=events.find(x=>x.id===id)||{title:"",type:"rehearsal",date:iso(new Date()),start:"17:00",end:"19:00",venue:"",audience:"trainees",notes:"",...(pre||{})};
   openDlg(`<form onsubmit="saveEv(event,'${id||""}')"><h3>${id?"Edit":"New"} event</h3>${fld("Title","title",e.title,"text",1)}
-  <label>Type<select name="type">${["rehearsal","event","performance"].map(o=>`<option ${o===e.type?"selected":""}>${o}</option>`).join("")}</select></label>
+  <label>Type<select name="type">${["Rehearsal","Event","Performance", "Assessment"].map(o=>`<option ${o===e.type?"selected":""}>${o}</option>`).join("")}</select></label>
   ${fld("Date","date",e.date,"date",1)}${fld("Start","start",e.start,"time",1)}${fld("End","end",e.end,"time",1)}${fld("Venue","venue",e.venue)}
   <label>Needs<select name="audience">${opts({trainees:"Trainees only",staff:"Members and officers only",all:"Everyone"},e.audience)}</select></label>
   <label>Notes<textarea name="notes" rows="2">${esc(e.notes)}</textarea></label>
