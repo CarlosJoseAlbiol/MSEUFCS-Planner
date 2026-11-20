@@ -46,7 +46,7 @@ nav button:hover{color:var(--ink);background:rgba(255,255,255,.04)}
 nav button.on{color:var(--ink);background:var(--s2)}nav button.on svg{color:var(--gold)}
 nav button.on::before{content:"";position:absolute;left:-16px;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:var(--gold)}
 #bar{margin-top:auto;display:grid;gap:8px;font-size:12px;color:var(--mut)}#bar label{display:grid;gap:4px;margin:0}#bar select{width:100%}
-#who{display:flex;gap:10px;align-items:center;justify-content:space-between;padding-top:16px;border-top:1px solid var(--line);font-size:13px}.who{min-width:0;flex:1}.who b{display:block;line-height:1.2}#who button{flex:none;white-space:nowrap;padding:7px 14px}
+#who{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding-top:16px;border-top:1px solid var(--line);font-size:13px}.who{min-width:0;flex:1}.who b{display:block;line-height:1.2}#who button{flex:none;white-space:nowrap;padding:7px 14px}
 main{width:100%;min-width:0;max-width:1400px;margin:0 auto;padding:clamp(20px,3.5vh,40px) clamp(18px,3vw,48px) 80px}
 .pagehead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:26px}
 /* events */
@@ -108,13 +108,29 @@ dialog[open]{animation:pop .4s var(--ease) both}dialog[open]::backdrop{animation
   #login{grid-template-columns:1fr;height:auto;min-height:100dvh}.hero{height:auto;padding:28px}.lr{height:auto}.hero img{width:96px;height:96px}.hero h1{font-size:38px}
   #shell{grid-template-columns:1fr}#side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:14px 16px;gap:12px}
   .brand span{display:none}nav{flex-direction:row;overflow-x:auto;width:100%;order:3}nav button.on::before{display:none}
-  #bar{margin:0;width:100%;order:4}#who{border:0;padding:0;margin-left:auto}.who{display:none}
+  #bar{margin:0;width:100%;order:4}#who{border:0;padding:0;margin-left:auto;flex-direction:row;align-items:center}.who{display:none}
   .ev,.ev.big{grid-template-columns:1fr;gap:8px}.ev .dt{text-align:left;display:flex;gap:8px;align-items:baseline}.ev.big .dt b{font-size:56px}.ev.big{padding:20px}.ev.big h3{font-size:32px}
 }
 @media(prefers-reduced-motion:reduce){*,*::before{animation:none!important;transition:none!important}}
+.rolehead{display:flex;align-items:center;gap:10px;margin:30px 0 8px}h3.rolehead{color:var(--gold)}.rolehead span{background:rgba(240,197,63,.16);border-radius:999px;padding:1px 12px;font:600 13px Figtree,sans-serif}
+.line{border-left:4px solid var(--mut)}.line.r-mi{border-left-color:#f0c53f}.line.r-senior{border-left-color:#ffa56e}.line.r-member{border-left-color:#6ea8ff}.line.r-trainee{border-left-color:#7fd9a1}
+.grp{margin:6px 0 10px}.grp>small{font-weight:600}.grp ul{margin:4px 0 0}
+.minbtn{margin-left:auto;width:32px;height:32px;padding:0;display:grid;place-items:center;border-radius:50%;flex:none}
+.minbtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .35s}
+#shell{transition:grid-template-columns .35s var(--ease)}
+@media(min-width:861px){
+  #shell.min{grid-template-columns:76px 1fr}
+  #shell.min #side{padding:22px 10px;align-items:center;overflow-x:hidden}
+  #shell.min .brand{flex-direction:column;padding:0;gap:12px}#shell.min .brand>div{display:none}
+  #shell.min .minbtn{margin:0}#shell.min .minbtn svg{transform:rotate(180deg)}
+  #shell.min nav{width:100%}#shell.min nav button{justify-content:center;padding:12px 0}#shell.min nav button span{display:none}
+  #shell.min nav button.on::before{left:-10px}
+  #shell.min #bar,#shell.min #who{display:none}
+}
+@media(max-width:860px){.minbtn{display:none}}
 </style></head><body>
 <div id="login" hidden><section class="hero"><img src="logo.jpg" alt="MSEUF Concert Singers logo"><h1>MSEUF Concert Singers Calendar</h1><div class="lines"></div></section><section class="lr"><div class="lcard" id="lcard"><h2 id="ltitle"></h2><div class="seg" id="lseg" data-active="trainee"><button type="button" data-g="trainee">Trainee</button><button type="button" data-g="staff">Master / Senior Member</button></div><div id="lbody"></div></div></section></div>
-<div id="shell" hidden><aside id="side"><div class="brand"><img class="logo" src="logo.jpg" alt="" onerror="this.remove()"><div><b>MSEUF</b><span>Concert Singers Calendar</span></div></div><nav id="tabs"></nav><div id="bar"></div><div id="who"></div></aside><main id="app"></main></div><dialog id="dlg"></dialog><div id="toast" role="status"></div>
+<div id="shell" hidden><aside id="side"><div class="brand"><img class="logo" src="logo.jpg" alt="" onerror="this.remove()"><div><b>MSEUF</b><span>Concert Singers Calendar</span></div><button id="min" class="minbtn" onclick="toggleSide()" aria-label="Minimize sidebar" aria-expanded="true" title="Minimize"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button></div><nav id="tabs"></nav><div id="bar"></div><div id="who"></div></aside><main id="app"></main></div><dialog id="dlg"></dialog><div id="toast" role="status"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -128,6 +144,10 @@ const db=firebase.firestore(),auth=firebase.auth();
 const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],CODE={M:1,T:2,W:3,Th:4,F:5,S:6};
 const ROLES={trainee:"Trainee",member:"Member",senior:"Senior member",mi:"Master of Initiation"};
 const ROLE_AUTH={master:"Master of Initiation",senior:"Senior Member"};
+const RORDER=["mi","senior","member","trainee"],RPLURAL={mi:"Masters of Initiation",senior:"Senior members",member:"Members",trainee:"Trainees"};
+const AUD={all:"everyone",staff:"members and officers",trainees:"trainees",trainee:"trainees"};
+const inAud=(p,a)=>a==="all"||(a==="staff"?(p.role||"trainee")!=="trainee":(p.role||"trainee")==="trainee");
+const peopleOpts=pid=>RORDER.map(r=>{const g=people.filter(p=>(p.role||"trainee")===r);return g.length?`<optgroup label="${RPLURAL[r]}">${g.map(x=>`<option value="${x.id}" ${x.id===pid?"selected":""}>${esc(x.name)}</option>`).join("")}</optgroup>`:""}).join("");
 const LBL={yes:"Available (confirmed)",free:"Available",busy:"Class conflict",no:"Not available"};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -175,6 +195,7 @@ function status(p,ev){
 const byName=(a,b)=>(a.name||"").localeCompare(b.name||"");
 
 // ---------- data ----------
+const canEdit=pid=>!!role||pid===me,NOEDIT="You can only edit your own schedule. Choose your name under “I am”.";
 let seeding=false;
 db.collection("people").onSnapshot(s=>{people=s.docs.map(d=>({id:d.id,...d.data()})).sort(byName);render();
   if(!s.docs.length&&!s.metadata.fromCache&&!seeding){seeding=true;seed().finally(()=>seeding=false)}},fail);
@@ -229,8 +250,8 @@ function render(){
   const T=role?[["events","Events"],["cal","Calendar"],["people","People"],["finder","Who’s free"]]:[["events","Events"],["cal","Calendar"],["mine","Schedules"],["finder","Who’s free"]];
   if(!T.some(t=>t[0]===tab))tab="events";
   $("#who").innerHTML=role?`<div class="who"><b>${esc(profile.name||user.email)}</b><small>${ROLE_AUTH[role]}</small></div><button onclick="leave()">Sign out</button>`:`<div class="who"><b>Trainee view</b><small>No login needed</small></div><button onclick="leave()">MI / Senior Members Login</button>`;
-  $("#tabs").innerHTML=T.map(([k,l])=>`<button class="${k===tab?"on":""}" onclick="go('${k}')"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>${l}</button>`).join("");
-  $("#bar").innerHTML=`<label>I am: <select onchange="setMe(this.value)"><option value="">— choose your name —</option>${people.map(p=>`<option value="${p.id}" ${p.id===me?"selected":""}>${esc(p.name)}</option>`).join("")}</select></label><button onclick="addPerson()">I’m not listed</button>`;
+  $("#tabs").innerHTML=T.map(([k,l])=>`<button class="${k===tab?"on":""}" onclick="go('${k}')" title="${l}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg><span>${l}</span></button>`).join("");
+  $("#bar").innerHTML=`<label>I am: <select onchange="setMe(this.value)"><option value="">— choose your name —</option>${peopleOpts(me)}</select></label><button onclick="addPerson()">I’m not listed</button>`;
   $("#app").innerHTML=({events:evView,cal:calView,mine:schedPage,people:peopleView,finder:finderView})[tab]();
   if(tab==="finder")finderRes();
   if(!wasIn){wasIn=true;animateMain()}
@@ -238,18 +259,18 @@ function render(){
 function setMe(v){me=v;localStorage.setItem("me",v);render()}
 
 // ---------- events ----------
-function lst(t,a){return a.length?`<h4>${t} (${a.length})</h4><ul>${a.map(x=>`<li>${esc(x.p.name)} <small>— ${esc(x.why)}</small></li>`).join("")}</ul>`:""}
+function lst(t,a){return a.length?`<h4>${t} (${a.length})</h4>`+RORDER.map(r=>{const g=a.filter(x=>(x.p.role||"trainee")===r);return g.length?`<div class="grp"><small>${RPLURAL[r]} (${g.length})</small><ul>${g.map(x=>`<li>${esc(x.p.name)} <small>— ${esc(x.why)}</small></li>`).join("")}</ul></div>`:""}).join(""):""}
 function evBlock(ev,mp,big){
   const d=new Date(ev.date+"T00:00"),n=Math.round((d-new Date(iso(new Date())+"T00:00"))/864e5);
   const rel=n===0?"Today":n===1?"Tomorrow":n>1?"In "+n+" days":-n+(n===-1?" day ago":" days ago");
-  const st=people.filter(p=>ev.audience==="all"||p.role==="trainee").map(p=>({p,...status(p,ev)}));
+  const st=people.filter(p=>inAud(p,ev.audience)).map(p=>({p,...status(p,ev)}));
   const ins=st.filter(x=>x.s==="yes"||x.s==="free"),outs=st.filter(x=>x.s==="no"||x.s==="busy"),mine=mp&&status(mp,ev);
   return `<article class="ev ${big?"big":""}"><div class="dt"><b>${d.getDate()}</b><span>${d.toLocaleDateString("en-PH",{month:"short"})}</span></div><div>
     <div class="row"><h3>${esc(ev.title)}</h3><span class="tag">${esc(ev.type)}</span><span class="rel">${rel}</span><span class="sp"></span>${role?`<button onclick="evDlg('${ev.id}')">Edit</button><button onclick="delEv('${ev.id}')">Delete</button>`:""}</div>
     <p class="meta">${DAYS[d.getDay()]} · ${t12(ev.start)}–${t12(ev.end)}${ev.venue?" · "+esc(ev.venue):""}</p>
     ${ev.notes?`<p>${esc(ev.notes)}</p>`:""}
     <div class="meter" role="img" aria-label="${ins.length} available, ${outs.length} not available"><i class="in" style="flex:${ins.length}"></i><i class="out" style="flex:${outs.length}"></i></div>
-    <p class="cnt"><span class="ok">${ins.length} available</span><span class="bad">${outs.length} not available</span><small>${ev.audience==="all"?"everyone":"trainees"}</small></p>
+    <p class="cnt"><span class="ok">${ins.length} available</span><span class="bad">${outs.length} not available</span><small>${AUD[ev.audience]||"trainees"}</small></p>
     ${mp?`<div class="me">${esc(mp.name)}: <span class="s-${mine.s}">${LBL[mine.s]}</span> <small>${esc(mine.why)}</small><div class="row"><button onclick="resp('${ev.id}','yes')">I’m available</button><button onclick="resp('${ev.id}','no')">Not available</button><button onclick="resp('${ev.id}',null)">Reset to auto</button></div></div>`:`<p class="hint">Choose your name to respond.</p>`}
     <details><summary>See who’s in</summary>${lst("Available",ins)}${lst("Not available",outs)}</details></div></article>`;
 }
@@ -265,7 +286,7 @@ function evDlg(id){
   openDlg(`<form onsubmit="saveEv(event,'${id||""}')"><h3>${id?"Edit":"New"} event</h3>${fld("Title","title",e.title,"text",1)}
   <label>Type<select name="type">${["rehearsal","event","performance"].map(o=>`<option ${o===e.type?"selected":""}>${o}</option>`).join("")}</select></label>
   ${fld("Date","date",e.date,"date",1)}${fld("Start","start",e.start,"time",1)}${fld("End","end",e.end,"time",1)}${fld("Venue","venue",e.venue)}
-  <label>Needs<select name="audience">${opts({trainees:"Trainees only",all:"Everyone"},e.audience)}</select></label>
+  <label>Needs<select name="audience">${opts({trainees:"Trainees only",staff:"Members and officers only",all:"Everyone"},e.audience)}</select></label>
   <label>Notes<textarea name="notes" rows="2">${esc(e.notes)}</textarea></label>
   <div class="row"><button class="pri">Save event</button><button type="button" onclick="closeDlg()">Cancel</button></div></form>`);
 }
@@ -281,14 +302,15 @@ function delEv(id){if(confirm("Delete this event?"))db.collection("events").doc(
 function schedView(pid){
   const p=people.find(x=>x.id===pid);
   if(!p)return `<p class="empty">Choose a name to see a class schedule, or tap “I’m not listed” to add yourself.</p>`;
-  const ed=!!role||pid===me,g=weekGrid(p);
+  const ed=canEdit(pid),g=weekGrid(p);
   const days=[1,2,3,4,5,6].map(d=>({d,l:(p.classes||[]).filter(c=>c.days.includes(d)).sort((a,b)=>t2m(a.start)-t2m(b.start))}));
   return `<section><div class="row"><h3>${esc(p.name)}</h3><small>${esc(p.course||"")} · ${ROLES[p.role]||""}</small><span class="sp"></span>${ed?`<button class="pri" onclick="classDlg('${p.id}')">+ Add class</button>`:""}${role?`<button onclick="editPerson('${p.id}')">Edit info</button><button onclick="delPerson('${p.id}')">Delete</button>`:""}</div>`+
-  weekNav(g.rng)+g.html+`<h3 class="sec">Class list</h3>`+
+  (ed?"":`<p class="hint">View only. Choose your name under “I am” to edit your own schedule.</p>`)+weekNav(g.rng)+g.html+`<h3 class="sec">Class list</h3>`+
   days.map(({d,l})=>`<div class="day"><b>${DAYS[d]}</b>${l.map(c=>`<div class="cls"><span>${t12(c.start)}–${t12(c.end)}</span><b>${esc(c.subject)}</b><small>${esc(c.room)}</small>${ed?`<span><button onclick="classDlg('${p.id}','${c.id}')">Edit</button> <button onclick="delClass('${p.id}','${c.id}')" aria-label="Delete class">✕</button></span>`:""}</div>`).join("")||`<div><small>No class</small></div>`}</div>`).join("")+
   (ed?uploadRow(p.id):"")+(role?picsSection(p.id):"")+`</section>`;
 }
 function classDlg(pid,cid){
+  if(!canEdit(pid))return toast(NOEDIT);
   const p=people.find(x=>x.id===pid),c=(p.classes||[]).find(x=>x.id===cid)||{subject:"",days:[],start:"08:00",end:"09:00",room:""};
   openDlg(`<form onsubmit="saveClass(event,'${pid}','${cid||""}')"><h3>${cid?"Edit":"Add"} class</h3>${fld("Subject","subject",c.subject,"text",1)}
   <label>Days</label><div class="days">${[1,2,3,4,5,6].map(d=>`<label><input type="checkbox" name="d" value="${d}" ${c.days.includes(d)?"checked":""}>${DAYS[d]}</label>`).join("")}</div>
@@ -297,13 +319,13 @@ function classDlg(pid,cid){
 }
 function saveClasses(pid,l){return db.collection("people").doc(pid).update({classes:l,updatedAt:Date.now()}).catch(fail)}
 function saveClass(e,pid,cid){
-  e.preventDefault();const fd=new FormData(e.target),p=people.find(x=>x.id===pid),days=fd.getAll("d").map(Number);
+  e.preventDefault();if(!canEdit(pid))return toast(NOEDIT);const fd=new FormData(e.target),p=people.find(x=>x.id===pid),days=fd.getAll("d").map(Number);
   if(!days.length)return toast("Pick at least one day");
   if(t2m(fd.get("end"))<=t2m(fd.get("start")))return toast("End time must be after start time");
   const c={id:cid||"c"+Date.now().toString(36),days,start:fd.get("start"),end:fd.get("end"),subject:fd.get("subject"),room:fd.get("room")};
   saveClasses(pid,(p.classes||[]).filter(x=>x.id!==cid).concat(c)).then(()=>{closeDlg();toast("Class saved")});
 }
-function delClass(pid,cid){if(confirm("Remove this class?"))saveClasses(pid,people.find(x=>x.id===pid).classes.filter(c=>c.id!==cid))}
+function delClass(pid,cid){if(!canEdit(pid))return toast(NOEDIT);if(confirm("Remove this class?"))saveClasses(pid,people.find(x=>x.id===pid).classes.filter(c=>c.id!==cid))}
 
 // ---------- people ----------
 function addPerson(){
@@ -321,8 +343,9 @@ function saveInfo(e,id){e.preventDefault();const d=Object.fromEntries(new FormDa
 function delPerson(id){if(confirm("Delete this person and their schedule?")){db.collection("people").doc(id).delete().then(()=>{viewPid="";if(me===id)setMe("")}).catch(fail)}}
 const setRole=(id,v)=>db.collection("people").doc(id).update({role:v}).catch(fail);
 function peopleView(){
-  return `<div class="row"><h2>People (${people.length})</h2><span class="sp"></span><button onclick="addPerson()">+ Add person</button><button onclick="seed()">Import starter schedules</button></div>`+
-  people.map(p=>`<div class="row line ${p.id===viewPid?"sel":""}"><button class="link" onclick="viewPid='${p.id}';render()">${esc(p.name)}</button><small>${esc(p.course||"")}</small><span class="sp"></span><select onchange="setRole('${p.id}',this.value)" aria-label="Role">${opts(ROLES,p.role)}</select><small>${(p.classes||[]).length} classes</small></div>`).join("")+
+  const row=p=>`<div class="row line r-${p.role||"trainee"} ${p.id===viewPid?"sel":""}"><button class="link" onclick="viewPid='${p.id}';render()">${esc(p.name)}</button><small>${esc(p.course||"")}</small><span class="sp"></span><select onchange="setRole('${p.id}',this.value)" aria-label="Role">${opts(ROLES,p.role||"trainee")}</select><small>${(p.classes||[]).length} classes</small></div>`;
+  return `<div class="pagehead"><h2>People</h2><small>${people.length} total</small><span class="sp"></span><button onclick="addPerson()">+ Add person</button><button onclick="seed()">Import starter schedules</button></div>`+
+  RORDER.map(r=>{const g=people.filter(p=>(p.role||"trainee")===r);return `<h3 class="sec rolehead">${RPLURAL[r]}<span>${g.length}</span></h3>`+(g.length?g.map(row).join(""):`<p class="hint">No one yet. Change a person’s role from the dropdown on their row.</p>`)}).join("")+
   (viewPid?`<hr>`+schedView(viewPid):"");
 }
 
@@ -355,7 +378,7 @@ function weekGrid(p){
     html:`<div class="calwrap"><div class="cal"><div class="h"></div>${heads}<div class="tm" style="height:${H}px">${times.join("")}</div>${cols}</div></div>`};
 }
 const weekNav=r=>`<div class="row"><button onclick="calWeek--;render()">‹ Prev</button><button onclick="calWeek=0;render()">This week</button><button onclick="calWeek++;render()">Next ›</button><b>${r}</b><span class="live">Live</span></div>`;
-const personSelect=(pid,fn)=>`<select onchange="${fn}" aria-label="Whose schedule"><option value="">— choose a name —</option>${people.map(x=>`<option value="${x.id}" ${x.id===pid?"selected":""}>${esc(x.name)}</option>`).join("")}</select>`;
+const personSelect=(pid,fn)=>`<select onchange="${fn}" aria-label="Whose schedule"><option value="">— choose a name —</option>${peopleOpts(pid)}</select>`;
 function calView(){
   const pid=calPid||me,p=people.find(x=>x.id===pid),g=weekGrid(p);
   return `<div class="pagehead"><h2>Weekly calendar</h2><span class="sp"></span>${personSelect(pid,"calPid=this.value;render()")}</div>${weekNav(g.rng)}
@@ -376,7 +399,7 @@ function compress(file){return new Promise((res,rej)=>{
     rej(new Error("Picture is too large. Try a smaller one."))};
   img.src=u})}
 async function uploadPics(files,pid){
-  const p=people.find(x=>x.id===pid);if(!p)return toast("Choose your name first");let n=0;
+  const p=people.find(x=>x.id===pid);if(!p)return toast("Choose your name first");if(!canEdit(pid))return toast(NOEDIT);let n=0;
   for(const f of files){
     if(!f.type.startsWith("image/")){toast(f.name+" is not a picture");continue}
     try{toast("Uploading "+f.name+"…");const data=await compress(f);
@@ -400,12 +423,12 @@ async function delPic(id,pid){if(!confirm("Delete this picture?"))return;try{awa
 
 // ---------- who's free ----------
 function finderView(){
-  return `<h2>Who’s free?</h2><div class="row"><input type="date" value="${f.date}" onchange="f.date=this.value;finderRes()"><input type="time" value="${f.start}" onchange="f.start=this.value;finderRes()"><input type="time" value="${f.end}" onchange="f.end=this.value;finderRes()"><select onchange="f.aud=this.value;finderRes()">${opts({trainee:"Trainees",all:"Everyone"},f.aud)}</select></div><div id="fr"></div>`;
+  return `<h2>Who’s free?</h2><div class="row"><input type="date" value="${f.date}" onchange="f.date=this.value;finderRes()"><input type="time" value="${f.start}" onchange="f.start=this.value;finderRes()"><input type="time" value="${f.end}" onchange="f.end=this.value;finderRes()"><select onchange="f.aud=this.value;finderRes()">${opts({trainee:"Trainees",staff:"Members and officers",all:"Everyone"},f.aud)}</select></div><div id="fr"></div>`;
 }
 function finderRes(){
   const el=$("#fr");if(!el)return;
   if(!f.date||!f.start||!f.end||t2m(f.end)<=t2m(f.start))return el.innerHTML=`<p class="empty">Pick a date and a valid time range.</p>`;
-  const g=people.filter(p=>f.aud==="all"||p.role==="trainee").map(p=>({p,...status(p,{...f,responses:{}})}));
+  const g=people.filter(p=>inAud(p,f.aud)).map(p=>({p,...status(p,{...f,responses:{}})}));
   el.innerHTML=`<p><span class="ok">${g.filter(x=>x.s==="free").length} free</span> · <span class="bad">${g.filter(x=>x.s==="busy").length} busy</span></p>`+lst("Free",g.filter(x=>x.s==="free"))+lst("Busy",g.filter(x=>x.s==="busy"));
 }
 
@@ -432,5 +455,7 @@ async function seed(){
   if(!n)return toast("Starter schedules are already imported");
   b.commit().then(()=>toast(n+" schedules imported")).catch(fail);
 }
+function toggleSide(){const m=$("#shell").classList.toggle("min");localStorage.setItem("sidemin",m?"1":"0");const b=$("#min");b.setAttribute("aria-expanded",String(!m));b.title=b.ariaLabel=m?"Expand sidebar":"Minimize sidebar"}
+if(localStorage.getItem("sidemin")==="1"){$("#shell").classList.add("min");$("#min").setAttribute("aria-expanded","false")}
 render();
 </script></body></html>
