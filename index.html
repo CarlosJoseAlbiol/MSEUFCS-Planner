@@ -162,6 +162,7 @@ h2{font-size:42px}.pagehead{margin-bottom:20px}
 .more .menu button{display:block;width:100%;text-align:left;border:0;border-radius:8px;padding:9px 12px;color:var(--ink)}.more .menu button:hover{background:rgba(255,255,255,.07);color:var(--gold)}.more .menu button.danger{color:var(--bad)}
 .card ol{margin:8px 0 0;padding-left:20px}.card li{margin:8px 0}
 @media print{.more{display:none!important}}
+.step{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start;margin:14px 0}.step i{font:600 38px/1 var(--serif);color:var(--gold);font-style:normal}.step p{margin:2px 0 0;color:var(--mut)}.step b{font-size:16px}.card ul{margin:8px 0 0;padding-left:20px}
 </style></head><body>
 <div id="login" hidden><section class="hero"><img src="logo.jpg" alt="MSEUF Concert Singers logo"><h1>MSEUF Concert Singers Calendar</h1><div class="lines"></div></section><section class="lr"><div class="lcard" id="lcard"><h2 id="ltitle"></h2><div class="seg" id="lseg" data-active="trainee"><button type="button" data-g="trainee">Trainee</button><button type="button" data-g="staff">Master / Senior Member</button></div><div id="lbody"></div></div></section></div>
 <div id="shell" hidden><button id="min" class="minbtn" onclick="toggleSide()" aria-label="Minimize sidebar" aria-expanded="true" title="Minimize"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><aside id="side"><div class="brand"><img class="logo" src="logo.jpg" alt="" onerror="this.remove()"><div><b>MSEUF</b><span>Concert Singers Calendar</span></div></div><nav id="tabs"></nav><div id="bar"></div><div id="who"></div></aside><main id="app"></main></div><dialog id="dlg"></dialog><div id="toast" role="status"></div>
@@ -677,22 +678,28 @@ function expIcs(pid){
 const more=items=>`<details class="more"><summary aria-label="More actions">⋯</summary><div class="menu">${items.map(([l,fn,d])=>`<button class="${d?"danger":""}" onclick="${fn}">${l}</button>`).join("")}</div></details>`;
 document.addEventListener("click",e=>document.querySelectorAll("details.more[open]").forEach(d=>{if(!d.contains(e.target))d.open=false}));
 function helpView(){
-  const steps=a=>`<ol>${a.map(x=>`<li>${x}</li>`).join("")}</ol>`;
+  const st=(n,t,d)=>`<div class="step"><i>${n}</i><div><b>${t}</b><p>${d}</p></div></div>`;
+  const li=a=>`<ul>${a.map(x=>`<li>${x}</li>`).join("")}</ul>`;
   return `<div class="pagehead"><h2>Help</h2></div>
-  <div class="card"><h3>For everyone</h3>${steps([
-    "<b>Pick your name</b> in the “I am” box at the bottom of the menu. Everything you do here is for the name you pick.",
-    "<b>Events:</b> see upcoming rehearsals and tap <b>I’m available</b> or <b>Not available</b>. If you don’t answer, the app checks your class schedule and guesses for you.",
-    "<b>Schedules:</b> keep your classes up to date so officers can see when you’re free. Use <b>+ Add class</b>, click an empty spot on the weekly grid, type a quick line like <i>MW 7:30-9:00 Retorika @ GSSR4</i>, or use <b>Import</b> to load a file or paste rows.",
-    "<b>Calendar</b> shows the week or the month, with rehearsals in gold. A red outline means it clashes with one of your classes.",
-    "<b>Attendance</b> shows how you did at past rehearsals. <b>Announcements</b> has the latest notices.",
-    "Not on the list? Ask an officer to add you. You can only edit your own schedule."])}</div>
-  ${role?`<div class="card"><h3>For officers</h3>${steps([
-    "<b>Events → New event</b> to schedule a rehearsal. You can repeat it weekly in one go.",
-    "<b>Who’s free</b> shows who has no class at a time, and suggests the best times over the next two weeks.",
-    "<b>Attendance:</b> open an event and mark each person Present, Late, Excused or Absent.",
-    "<b>Announcements:</b> post notices and pin the important ones.",
-    "<b>People:</b> add, edit or delete people and change their role. Only officers can do this.",
-    "<b>Access:</b> give someone an officer role by adding the email they sign in with, then ask them to use Create an account on the login page."])}</div>`:""}`;
+  <div class="card"><h3>Getting started</h3>
+    ${st(1,"Pick your name","Find <b>I am</b> in the menu. Choose your name there.")}
+    ${st(2,"Add your classes","Open <b>Schedules</b>. Press <b>+ Add class</b>. Fill in the subject, days and time.")}
+    ${st(3,"Answer rehearsals","Open <b>Events</b>. Press <b>I’m available</b> or <b>Not available</b>.")}
+  </div>
+  <div class="card"><h3>Good to know</h3>${li([
+    "Lots of classes? Press <b>Import</b> and paste your schedule.",
+    "<b>Calendar</b> shows rehearsals in gold. A red outline means it clashes with one of your classes.",
+    "Skipped a rehearsal answer? The app checks your classes and guesses for you.",
+    "You can only change your own schedule.",
+    "Not on the list? Ask an officer to add you."])}</div>
+  ${role?`<div class="card"><h3>For officers</h3>
+    ${st(1,"Make a rehearsal","Open <b>Events</b>, press <b>New event</b>. You can repeat it every week.")}
+    ${st(2,"Find a good time","Open <b>Who’s free</b>. Pick a date and time. <b>Best times</b> shows the top choices.")}
+    ${st(3,"Check attendance","Open <b>Attendance</b>. Pick an event. Press Present, Late, Excused or Absent.")}
+    ${st(4,"Post a notice","Open <b>Announcements</b>. Press <b>New announcement</b>.")}
+    ${st(5,"Add or remove people","Open <b>People</b>. Press <b>+ Add person</b>. To remove someone, press <b>⋯</b> then <b>Delete person</b>.")}
+    ${st(6,"Give officer access","Open <b>Access</b>. Type their email and role. Then ask them to press <b>Create an account</b> on the login page.")}
+  </div>`:""}`;
 }
 
 // ---------- starter schedules (read from the photos; edit in the app if anything is off) ----------
