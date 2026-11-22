@@ -140,6 +140,9 @@ dialog[open]{animation:pop .4s var(--ease) both}dialog[open]::backdrop{animation
 .att{padding:4px 12px;font-size:13px}.att.on{color:#1a0408;font-weight:700}.att.on.a-present{background:#7fd9a1}.att.on.a-late{background:#ffc266}.att.on.a-excused{background:#8fb8ff}.att.on.a-absent{background:#ff8f86}
 @media(max-width:860px){.md{min-height:62px}.md .chip{font-size:10px}}
 @media print{body{background:#fff!important;color:#000}body::after,#side,#bar,.minbtn,#toast,.live,button,select,.up,.thumbs,.hint{display:none!important}#shell{display:block}main{max-width:none;padding:0}h2,h3{color:#000}.card,.day,.line,.calwrap{background:#fff;border-color:#999;color:#000}.cal .h{background:#eee;color:#000}.cal .h.today{background:#ddd}.blk{background:#f1f1f1!important;color:#000}.blk.ev{background:#ddd!important}small{color:#444}}
+.line.r-greatmaster{border-left-color:#e08bd8}.line.r-choirmaster{border-left-color:#5fd3d3}.line.r-adviser{border-left-color:#ff7a6e}
+.col.ed{cursor:cell}.blk.edit{cursor:pointer}.blk.edit:hover{filter:brightness(1.3)}
+dialog .row label select{width:100%}
 </style></head><body>
 <div id="login" hidden><section class="hero"><img src="logo.jpg" alt="MSEUF Concert Singers logo"><h1>MSEUF Concert Singers Calendar</h1><div class="lines"></div></section><section class="lr"><div class="lcard" id="lcard"><h2 id="ltitle"></h2><div class="seg" id="lseg" data-active="trainee"><button type="button" data-g="trainee">Trainee</button><button type="button" data-g="staff">Master / Senior Member</button></div><div id="lbody"></div></div></section></div>
 <div id="shell" hidden><aside id="side"><div class="brand"><img class="logo" src="logo.jpg" alt="" onerror="this.remove()"><div><b>MSEUF</b><span>Concert Singers Calendar</span></div><button id="min" class="minbtn" onclick="toggleSide()" aria-label="Minimize sidebar" aria-expanded="true" title="Minimize"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button></div><nav id="tabs"></nav><div id="bar"></div><div id="who"></div></aside><main id="app"></main></div><dialog id="dlg"></dialog><div id="toast" role="status"></div>
@@ -154,9 +157,10 @@ const firebaseConfig={apiKey:"AIzaSyAVmZRNPRF5vozc9q3vSwNQjOSDRYtLuxI",authDomai
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore(),auth=firebase.auth();
 const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],CODE={M:1,T:2,W:3,Th:4,F:5,S:6};
-const ROLES={trainee:"Trainee",member:"Member",senior:"Senior member",mi:"Master of Initiation"};
+const ROLES={trainee:"Trainee",member:"Member",senior:"Senior member",mi:"Master of Initiation",greatmaster:"Great Master",choirmaster:"Choirmaster",adviser:"Adviser"};
+const STAFF_ROLES={member:"Member",senior:"Senior member",mi:"Master of Initiation",greatmaster:"Great Master",choirmaster:"Choirmaster",adviser:"Adviser"};
 const ROLE_AUTH={master:"Master of Initiation",senior:"Senior Member"};
-const RORDER=["mi","senior","member","trainee"],RPLURAL={mi:"Masters of Initiation",senior:"Senior members",member:"Members",trainee:"Trainees"};
+const RORDER=["adviser","choirmaster","greatmaster","mi","senior","member","trainee"],RPLURAL={adviser:"Advisers",choirmaster:"Choirmasters",greatmaster:"Great Masters",mi:"Masters of Initiation",senior:"Senior members",member:"Members",trainee:"Trainees"};
 const AUD={all:"everyone",staff:"members and officers",trainees:"trainees",trainee:"trainees"};
 const inAud=(p,a)=>a==="all"||(a==="staff"?(p.role||"trainee")!=="trainee":(p.role||"trainee")==="trainee");
 const peopleOpts=pid=>RORDER.map(r=>{const g=people.filter(p=>(p.role||"trainee")===r);return g.length?`<optgroup label="${RPLURAL[r]}">${g.map(x=>`<option value="${x.id}" ${x.id===pid?"selected":""}>${esc(x.name)}</option>`).join("")}</optgroup>`:""}).join("");
@@ -171,12 +175,12 @@ const opts=(o,sel)=>Object.entries(o).map(([k,v])=>`<option value="${k}" ${k===s
 const fld=(l,n,v,t="text",r)=>`<label>${l}<input name="${n}" type="${t}" value="${esc(v)}" ${r?"required":""}></label>`;
 const parseDays=s=>[...s.matchAll(/Th|M|T|W|F|S/g)].map(m=>CODE[m[0]]);
 
-let people=[],events=[],role=null,user=null,profile=null,tab="events",me=localStorage.getItem("me")||"",viewPid="",showPast=false;
+let people=[],events=[],role=null,user=null,profile=null,staffList=[],unsubStaff=null,tab="events",me=localStorage.getItem("me")||"",viewPid="",showPast=false;
 const tmr=new Date();tmr.setDate(tmr.getDate()+1);
 let f={date:iso(tmr),start:"16:00",end:"18:00",aud:"trainee"};
 
 function toast(m){const t=$("#toast");t.textContent=m;t.className="show";clearTimeout(toast.t);toast.t=setTimeout(()=>t.className="",3500)}
-const openDlg=h=>{$("#dlg").style.width="";$("#dlg").innerHTML=h;$("#dlg").showModal()},closeDlg=()=>$("#dlg").close();
+const openDlg=h=>{const d=$("#dlg");d.style.width="";d.innerHTML=h;if(!d.open)d.showModal()},closeDlg=()=>$("#dlg").close();
 const fail=e=>toast(e.message||String(e));
 const reduceMotion=matchMedia("(prefers-reduced-motion: reduce)").matches,wait=ms=>new Promise(r=>setTimeout(r,ms));
 function morph(el,change){
@@ -208,29 +212,33 @@ const byName=(a,b)=>(a.name||"").localeCompare(b.name||"");
 
 // ---------- data ----------
 const canEdit=pid=>!!role||pid===me,NOEDIT="You can only edit your own schedule. Choose your name under “I am”.";
-let seeding=false;
+let seeding=false,peopleLoaded=false;
+function maybeSeed(){if(role&&peopleLoaded&&!people.length&&!seeding){seeding=true;seed().finally(()=>seeding=false)}}
 db.collection("people").onSnapshot(s=>{people=s.docs.map(d=>({id:d.id,...d.data()})).sort(byName);render();
-  if(!s.docs.length&&!s.metadata.fromCache&&!seeding){seeding=true;seed().finally(()=>seeding=false)}},fail);
+  peopleLoaded=!s.metadata.fromCache;maybeSeed()},fail);
 db.collection("events").onSnapshot(s=>{events=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));render()},fail);
 let viewer=localStorage.getItem("viewer")==="1",lt="trainee",lmode="in",lmsg="",loginDrawn=false,wasIn=false,tryingLogin=false;
 auth.onAuthStateChanged(async u=>{
-  user=u;role=null;profile=null;
+  user=u;role=null;profile=null;if(unsubStaff){unsubStaff();unsubStaff=null}
   if(u){
-    let d=null;
-    try{const x=await db.collection("users").doc(u.uid).get();d=x.exists?x.data():null}catch(e){fail(e)}
-    if(d&&(d.role==="master"||d.role==="senior")){role=d.role;profile=d}
-    else if(tryingLogin){tryingLogin=false;lt="staff";lmsg=d?"This is a trainee account. Choose Trainee and continue, no login needed.":"No grading sheet account found for this email. Create one in the grading sheet first.";loginDrawn=false}
+    let d=null,sd=null;const em=(u.email||"").toLowerCase();
+    try{const x=await db.collection("users").doc(u.uid).get();d=x.exists?x.data():null}catch(e){}
+    try{const y=await db.collection("staff").doc(em).get();sd=y.exists?y.data():null}catch(e){}
+    if(d&&(d.role==="master"||d.role==="senior")){role=d.role==="master"?"mi":"senior";profile=d}
+    else if(sd&&STAFF_ROLES[sd.role]){role=sd.role;profile={name:sd.name||(d&&d.name)||u.email}}
+    else if(tryingLogin){tryingLogin=false;lt="staff";lmsg="This account isn’t on the staff list. Ask a Master of Initiation, Great Master, Choirmaster or Adviser to add your email under Access.";loginDrawn=false}
+    if(role){maybeSeed();unsubStaff=db.collection("staff").onSnapshot(q=>{staffList=q.docs.map(x=>({id:x.id,...x.data()}));render()},()=>{})}
   }
   render();
 });
 const nice=x=>({"auth/invalid-credential":"Wrong email or password.","auth/email-already-in-use":"That email already has an account. Sign in instead.","auth/weak-password":"Password needs at least 6 characters.","auth/too-many-requests":"Too many tries. Wait a bit and try again."})[x.code]||x.message;
 function renderLogin(){
-  $("#ltitle").textContent=lt==="trainee"?"Welcome, trainee":"Sign in";
+  $("#ltitle").textContent=lt==="trainee"?"Welcome, trainee":lmode==="up"?"Create account":"Sign in";
   $("#lseg").dataset.active=lt;
   document.querySelectorAll("#lseg button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.g===lt)));
   $("#lbody").innerHTML=(lt==="trainee"?`<p class="sub">No login needed.</p><button class="gold wide" onclick="enterViewer()">Continue</button>`:
-  `<form onsubmit="staffAuth(event)"><label>Email<input name="email" type="email" placeholder="you@example.com" required autocomplete="email"></label><label>Password<input name="password" type="password" minlength="6" placeholder="At least 6 characters" required autocomplete="current-password"></label><button class="gold wide">Sign in</button></form>
-  <div class="row between"><span></span><a href="#" onclick="resetPw();return false">Forgot password?</a></div><p class="hint">Use your grading sheet account. Only Masters of Initiation and Senior Members can sign in.</p>`)+`<p class="err" id="lm" role="alert">${esc(lmsg)}</p>`;
+  `<form onsubmit="staffAuth(event)"><label>Email<input name="email" type="email" placeholder="you@example.com" required autocomplete="email"></label><label>Password<input name="password" type="password" minlength="6" placeholder="At least 6 characters" required autocomplete="${lmode==="up"?"new-password":"current-password"}"></label><button class="gold wide">${lmode==="up"?"Create account":"Sign in"}</button></form>
+  <div class="row between"><span>${lmode==="up"?"Have an account?":"New here?"} <a href="#" onclick="swapLogin(()=>{lmode='${lmode==="up"?"in":"up"}';lmsg='';renderLogin()});return false">${lmode==="up"?"Sign in":"Create an account"}</a></span><a href="#" onclick="resetPw();return false">Forgot password?</a></div><p class="hint">Use the email an officer added for you. Grading sheet accounts of Masters of Initiation and Senior Members work too.</p>`)+`<p class="err" id="lm" role="alert">${esc(lmsg)}</p>`;
   loginDrawn=true;
 }
 let swapBusy=false;
@@ -240,14 +248,14 @@ async function swapLogin(change){
 }
 document.querySelectorAll("#lseg button").forEach(b=>b.onclick=()=>{if(b.dataset.g!==lt)swapLogin(()=>{lt=b.dataset.g;lmsg="";renderLogin()})});
 function staffAuth(e){e.preventDefault();tryingLogin=true;const d=Object.fromEntries(new FormData(e.target));$("#lm").textContent="";
-  auth.signInWithEmailAndPassword(d.email,d.password).catch(x=>{tryingLogin=false;$("#lm").textContent=nice(x)})}
+  (lmode==="up"?auth.createUserWithEmailAndPassword(d.email,d.password):auth.signInWithEmailAndPassword(d.email,d.password)).catch(x=>{tryingLogin=false;$("#lm").textContent=nice(x)})}
 function resetPw(){const em=$("#lcard [name=email]").value.trim();if(!em)return $("#lm").textContent="Type your email first.";
   auth.sendPasswordResetEmail(em).then(()=>$("#lm").textContent="Reset link sent. Check your email.").catch(x=>$("#lm").textContent=nice(x))}
 function enterViewer(){viewer=true;localStorage.setItem("viewer","1");render()}
 function leave(){viewer=false;localStorage.removeItem("viewer");lt=role?"staff":"trainee";role?auth.signOut():render()}
 
 // ---------- render ----------
-const ICON={events:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/>',cal:'<path d="M3 4h18v16H3zM3 9h18M9 4v16M15 4v16"/>',people:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-4 3-6 6.5-6s6 2 6.5 6M16 5a3.5 3.5 0 010 7M18 14c2 .7 3.2 2.6 3.5 6"/>',news:'<path d="M4 5h13v14H6a2 2 0 01-2-2zM17 9h3v8a2 2 0 01-2 2M8 9h5M8 13h5"/>',att:'<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12l3 3 5-6"/>',finder:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',mine:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 4-7 8-7s7 2 8 7"/>'};
+const ICON={events:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/>',cal:'<path d="M3 4h18v16H3zM3 9h18M9 4v16M15 4v16"/>',people:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-4 3-6 6.5-6s6 2 6.5 6M16 5a3.5 3.5 0 010 7M18 14c2 .7 3.2 2.6 3.5 6"/>',access:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',news:'<path d="M4 5h13v14H6a2 2 0 01-2-2zM17 9h3v8a2 2 0 01-2 2M8 9h5M8 13h5"/>',att:'<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12l3 3 5-6"/>',finder:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',mine:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 4-7 8-7s7 2 8 7"/>'};
 let navBusy=false;
 async function go(k){
   if(k===tab||navBusy)return;
@@ -259,12 +267,12 @@ function render(){
   const inApp=!!role||viewer;$("#login").hidden=inApp;$("#shell").hidden=!inApp;
   if(!inApp){wasIn=false;if(!loginDrawn)renderLogin();return}
   loginDrawn=false;if(tab==="news")localStorage.setItem("annSeen",String(Date.now()));
-  const T=role?[["events","Events"],["news","Announcements"],["cal","Calendar"],["att","Attendance"],["people","People"],["finder","Who’s free"]]:[["events","Events"],["news","Announcements"],["cal","Calendar"],["mine","Schedules"],["att","Attendance"],["finder","Who’s free"]];
+  const T=role?[["events","Events"],["news","Announcements"],["cal","Calendar"],["mine","Schedules"],["att","Attendance"],["people","People"],["finder","Who’s free"],["access","Access"]]:[["events","Events"],["news","Announcements"],["cal","Calendar"],["mine","Schedules"],["att","Attendance"],["finder","Who’s free"]];
   if(!T.some(t=>t[0]===tab))tab="events";
-  $("#who").innerHTML=role?`<div class="who"><b>${esc(profile.name||user.email)}</b><small>${ROLE_AUTH[role]}</small></div><button onclick="leave()">Sign out</button>`:`<div class="who"><b>Trainee view</b><small>No login needed</small></div><button onclick="leave()">MI / Senior Members Login</button>`;
+  $("#who").innerHTML=role?`<div class="who"><b>${esc(profile.name||user.email)}</b><small>${ROLES[role]}</small></div><button onclick="leave()">Sign out</button>`:`<div class="who"><b>Trainee view</b><small>No login needed</small></div><button onclick="leave()">MI / Senior Members Login</button>`;
   $("#tabs").innerHTML=T.map(([k,l])=>`<button class="${k===tab?"on":""}" onclick="go('${k}')" title="${l}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg><span>${l}</span>${k==="news"&&annNew()?'<i class="dot"></i>':""}</button>`).join("");
-  $("#bar").innerHTML=`<label>I am: <select onchange="setMe(this.value)"><option value="">— choose your name —</option>${peopleOpts(me)}</select></label><button onclick="addPerson()">I’m not listed</button>`;
-  $("#app").innerHTML=({events:evView,news:annView,att:attView,cal:calView,mine:schedPage,people:peopleView,finder:finderView})[tab]();
+  $("#bar").innerHTML=`<label>I am: <select onchange="setMe(this.value)"><option value="">— choose your name —</option>${peopleOpts(me)}</select></label>${role?'<button onclick="addPerson()">Add person</button>':'<small>Not listed? Ask an officer to add you.</small>'}`;
+  $("#app").innerHTML=({events:evView,news:annView,access:accessView,att:attView,cal:calView,mine:schedPage,people:peopleView,finder:finderView})[tab]();
   if(tab==="finder"){finderRes();sugRes()}
   if(!wasIn){wasIn=true;animateMain()}
 }
@@ -296,7 +304,7 @@ function resp(id,v){db.collection("events").doc(id).update({["responses."+me]:v=
 function evDlg(id,pre){
   const e=events.find(x=>x.id===id)||{title:"",type:"rehearsal",date:iso(new Date()),start:"17:00",end:"19:00",venue:"",audience:"trainees",notes:"",...(pre||{})};
   openDlg(`<form onsubmit="saveEv(event,'${id||""}')"><h3>${id?"Edit":"New"} event</h3>${fld("Title","title",e.title,"text",1)}
-  <label>Type<select name="type">${["Rehearsal","Event","Performance", "Assessment"].map(o=>`<option ${o===e.type?"selected":""}>${o}</option>`).join("")}</select></label>
+  <label>Type<select name="type">${["rehearsal","event","performance"].map(o=>`<option ${o===e.type?"selected":""}>${o}</option>`).join("")}</select></label>
   ${fld("Date","date",e.date,"date",1)}${fld("Start","start",e.start,"time",1)}${fld("End","end",e.end,"time",1)}${fld("Venue","venue",e.venue)}
   <label>Needs<select name="audience">${opts({trainees:"Trainees only",staff:"Members and officers only",all:"Everyone"},e.audience)}</select></label>
   <label>Notes<textarea name="notes" rows="2">${esc(e.notes)}</textarea></label>
@@ -316,53 +324,89 @@ function delEv(id){if(confirm("Delete this event?"))db.collection("events").doc(
 // ---------- schedules ----------
 function schedView(pid){
   const p=people.find(x=>x.id===pid);
-  if(!p)return `<p class="empty">Choose a name to see a class schedule, or tap “I’m not listed” to add yourself.</p>`;
-  const ed=canEdit(pid),g=weekGrid(p);
+  if(!p)return `<p class="empty">Choose a name to see a class schedule. Not listed? Ask an officer to add you.</p>`;
+  const ed=canEdit(pid),g=weekGrid(p,ed);
   const days=[1,2,3,4,5,6].map(d=>({d,l:(p.classes||[]).filter(c=>c.days.includes(d)).sort((a,b)=>t2m(a.start)-t2m(b.start))}));
   return `<section><div class="row"><h3>${esc(p.name)}</h3><small>${esc(p.course||"")} · ${ROLES[p.role]||""}</small><span class="sp"></span><button onclick="window.print()">Print</button>${ed?`<button class="pri" onclick="classDlg('${p.id}')">+ Add class</button>`:""}${role?`<button onclick="editPerson('${p.id}')">Edit info</button><button onclick="delPerson('${p.id}')">Delete</button>`:""}</div>`+
-  (ed?"":`<p class="hint">View only. Choose your name under “I am” to edit your own schedule.</p>`)+weekNav(g.rng)+g.html+`<h3 class="sec">Class list</h3>`+
+  (ed?quickAddForm(p.id):`<p class="hint">View only. Choose your name under “I am” to edit your own schedule.</p>`)+weekNav(g.rng)+g.html+(ed?`<p class="hint">Tip: click an empty spot on the grid to add a class there, or click a class to edit it.</p>`:"")+`<h3 class="sec">Class list</h3>`+
   days.map(({d,l})=>`<div class="day"><b>${DAYS[d]}</b>${l.map(c=>`<div class="cls"><span>${t12(c.start)}–${t12(c.end)}</span><b>${esc(c.subject)}</b><small>${esc(c.room)}</small>${ed?`<span><button onclick="classDlg('${p.id}','${c.id}')">Edit</button> <button onclick="delClass('${p.id}','${c.id}')" aria-label="Delete class">✕</button></span>`:""}</div>`).join("")||`<div><small>No class</small></div>`}</div>`).join("")+
   (ed?uploadRow(p.id):"")+(role?picsSection(p.id):"")+`</section>`;
 }
-function classDlg(pid,cid){
+const timeSel=(n,v)=>{const o=[];for(let m=300;m<=1380;m+=15)o.push(hm2(m));if(!o.includes(v)){o.push(v);o.sort()}return `<select name="${n}">${o.map(x=>`<option value="${x}" ${x===v?"selected":""}>${t12(x)}</option>`).join("")}</select>`};
+function classDlg(pid,cid,pre){
   if(!canEdit(pid))return toast(NOEDIT);
-  const p=people.find(x=>x.id===pid),c=(p.classes||[]).find(x=>x.id===cid)||{subject:"",days:[],start:"08:00",end:"09:00",room:""};
+  const p=people.find(x=>x.id===pid),c=(p.classes||[]).find(x=>x.id===cid)||{subject:"",days:[],start:"08:00",end:"09:00",room:"",...(pre||{})};
   openDlg(`<form onsubmit="saveClass(event,'${pid}','${cid||""}')"><h3>${cid?"Edit":"Add"} class</h3>${fld("Subject","subject",c.subject,"text",1)}
   <label>Days</label><div class="days">${[1,2,3,4,5,6].map(d=>`<label><input type="checkbox" name="d" value="${d}" ${c.days.includes(d)?"checked":""}>${DAYS[d]}</label>`).join("")}</div>
-  ${fld("Start","start",c.start,"time",1)}${fld("End","end",c.end,"time",1)}${fld("Room","room",c.room)}
-  <div class="row"><button class="pri">Save class</button><button type="button" onclick="closeDlg()">Cancel</button></div></form>`);
+  <div class="row"><label>Start${timeSel("start",c.start)}</label><label>End${timeSel("end",c.end)}</label></div>${fld("Room","room",c.room)}
+  <div class="row"><button class="pri" value="save">Save class</button>${cid?"":'<button class="pri" value="more">Save and add another</button>'}<button type="button" onclick="closeDlg()">Cancel</button></div></form>`);
+  const i=document.querySelector("#dlg input[name=subject]");if(i)i.focus();
+}
+const quickAddForm=pid=>`<form class="row" onsubmit="quickAdd(event,'${pid}')"><input name="q" placeholder="Quick add: MW 7:30-9:00 Retorika @ GSSR4" aria-label="Quick add a class" style="flex:1;min-width:260px"><button class="pri">Add class</button></form>`;
+function parseT(t){const m=String(t).trim().toLowerCase().match(/^(\d{1,2})(?::?(\d{2}))?\s*(am|pm)?$/);if(!m)return null;let h=+m[1];const mi=+(m[2]||0),ap=m[3];
+  if(ap==="pm"&&h<12)h+=12;if(ap==="am"&&h===12)h=0;if(!ap&&h<7)h+=12;return h>23||mi>59?null:h*60+mi}
+function quickAdd(e,pid){
+  e.preventDefault();if(!canEdit(pid))return toast(NOEDIT);
+  const bad=()=>toast("Format: MW 7:30-9:00 Subject @ Room"),m=e.target.q.value.trim().match(/^([A-Za-z]+)\s+(\S+?)\s*(?:-|–|to)\s*(\S+)\s+(.+)$/i);
+  if(!m)return bad();
+  const map={M:1,T:2,W:3,H:4,R:4,F:5,S:6},days=[...m[1].toUpperCase().replace(/TH/g,"H")].map(c=>map[c]);
+  if(!days.length||days.some(x=>!x))return bad();
+  const a=parseT(m[2]);let b=parseT(m[3]);if(a==null||b==null)return bad();
+  if(b<=a&&!/am|pm/i.test(m[3])&&b+720>a&&b+720<1440)b+=720;
+  if(b<=a)return toast("End time must be after start time");
+  const[sub,room]=m[4].split(/\s*@\s*/),p=people.find(x=>x.id===pid);
+  saveClasses(pid,(p.classes||[]).concat({id:"c"+Date.now().toString(36),days:[...new Set(days)],start:hm2(a),end:hm2(b),subject:sub.trim(),room:(room||"").trim()})).then(()=>{e.target.reset();toast("Class added")});
+}
+function gridAdd(e,pid,dow,a){
+  if(e.target.closest(".blk"))return;
+  const r=e.currentTarget.getBoundingClientRect(),m=Math.max(300,a+Math.floor((e.clientY-r.top)/30)*30);
+  classDlg(pid,"",{days:[dow],start:hm2(m),end:hm2(Math.min(1380,m+60))});
 }
 function saveClasses(pid,l){return db.collection("people").doc(pid).update({classes:l,updatedAt:Date.now()}).catch(fail)}
 function saveClass(e,pid,cid){
-  e.preventDefault();if(!canEdit(pid))return toast(NOEDIT);const fd=new FormData(e.target),p=people.find(x=>x.id===pid),days=fd.getAll("d").map(Number);
+  e.preventDefault();if(!canEdit(pid))return toast(NOEDIT);
+  const fd=new FormData(e.target),p=people.find(x=>x.id===pid),days=fd.getAll("d").map(Number),more=e.submitter&&e.submitter.value==="more";
   if(!days.length)return toast("Pick at least one day");
   if(t2m(fd.get("end"))<=t2m(fd.get("start")))return toast("End time must be after start time");
   const c={id:cid||"c"+Date.now().toString(36),days,start:fd.get("start"),end:fd.get("end"),subject:fd.get("subject"),room:fd.get("room")};
-  saveClasses(pid,(p.classes||[]).filter(x=>x.id!==cid).concat(c)).then(()=>{closeDlg();toast("Class saved")});
+  saveClasses(pid,(p.classes||[]).filter(x=>x.id!==cid).concat(c)).then(()=>{
+    if(more){const len=t2m(c.end)-t2m(c.start);classDlg(pid,"",{days,start:c.end,end:hm2(Math.min(1380,t2m(c.end)+len))});toast("Saved. Add the next one.")}
+    else{closeDlg();toast("Class saved")}});
 }
 function delClass(pid,cid){if(!canEdit(pid))return toast(NOEDIT);if(confirm("Remove this class?"))saveClasses(pid,people.find(x=>x.id===pid).classes.filter(c=>c.id!==cid))}
 
 // ---------- people ----------
 function addPerson(){
+  if(!role)return toast("Only officers can add people. Ask one to add you.");
   openDlg(`<form onsubmit="savePerson(event)"><h3>Add person</h3>${fld("Full name (Last, First M.)","name","","text",1)}${fld("Course / year","course","")}
   ${role?`<label>Role<select name="role">${opts(ROLES,"trainee")}</select></label>`:""}
   <div class="row"><button class="pri">Add</button><button type="button" onclick="closeDlg()">Cancel</button></div></form>`);
 }
 function savePerson(e){
   e.preventDefault();const d=Object.fromEntries(new FormData(e.target)),ref=db.collection("people").doc();
-  ref.set({name:d.name,course:d.course,role:role?d.role:"trainee",classes:[],updatedAt:Date.now()}).then(()=>{setMe(ref.id);closeDlg();toast("Added. Now add your classes.")}).catch(fail);
+  ref.set({name:d.name,course:d.course,role:role?d.role:"trainee",classes:[],updatedAt:Date.now()}).then(()=>{closeDlg();openSched(ref.id);toast("Added. Now add their classes.")}).catch(fail);
 }
 function editPerson(id){const p=people.find(x=>x.id===id);
   openDlg(`<form onsubmit="saveInfo(event,'${id}')"><h3>Edit info</h3>${fld("Name","name",p.name,"text",1)}${fld("Course / year","course",p.course||"")}<div class="row"><button class="pri">Save</button><button type="button" onclick="closeDlg()">Cancel</button></div></form>`)}
 function saveInfo(e,id){e.preventDefault();const d=Object.fromEntries(new FormData(e.target));db.collection("people").doc(id).update({...d,updatedAt:Date.now()}).then(closeDlg).catch(fail)}
 function delPerson(id){if(confirm("Delete this person and their schedule?")){db.collection("people").doc(id).delete().then(()=>{viewPid="";if(me===id)setMe("")}).catch(fail)}}
 const setRole=(id,v)=>db.collection("people").doc(id).update({role:v}).catch(fail);
+const openSched=id=>{schedPid=id;go("mine")};
 function peopleView(){
-  const row=p=>`<div class="row line r-${p.role||"trainee"} ${p.id===viewPid?"sel":""}"><button class="link" onclick="viewPid='${p.id}';render()">${esc(p.name)}</button><small>${esc(p.course||"")}</small><span class="sp"></span><select onchange="setRole('${p.id}',this.value)" aria-label="Role">${opts(ROLES,p.role||"trainee")}</select><small>${(p.classes||[]).length} classes</small></div>`;
-  return `<div class="pagehead"><h2>People</h2><small>${people.length} total</small><span class="sp"></span><button onclick="addPerson()">+ Add person</button><button onclick="backup()">Backup</button><button onclick="seed()">Import starter schedules</button></div>`+
-  RORDER.map(r=>{const g=people.filter(p=>(p.role||"trainee")===r);return `<h3 class="sec rolehead">${RPLURAL[r]}<span>${g.length}</span></h3>`+(g.length?g.map(row).join(""):`<p class="hint">No one yet. Change a person’s role from the dropdown on their row.</p>`)}).join("")+
-  (viewPid?`<hr>`+schedView(viewPid):"");
+  const row=p=>`<div class="row line r-${p.role||"trainee"}"><button class="link" onclick="openSched('${p.id}')">${esc(p.name)}</button><small>${esc(p.course||"")}</small><span class="sp"></span><select onchange="setRole('${p.id}',this.value)" aria-label="Role">${opts(ROLES,p.role||"trainee")}</select><small>${(p.classes||[]).length} classes</small><button onclick="openSched('${p.id}')">Schedule</button><button onclick="editPerson('${p.id}')">Edit</button><button onclick="delPerson('${p.id}')">Delete</button></div>`;
+  return `<div class="pagehead"><h2>People</h2><small>${people.length} total</small><span class="sp"></span><button class="pri" onclick="addPerson()">+ Add person</button><button onclick="backup()">Backup</button><button onclick="seed()">Import starter schedules</button></div>`+
+  RORDER.map(r=>{const g=people.filter(p=>(p.role||"trainee")===r);return `<h3 class="sec rolehead">${RPLURAL[r]}<span>${g.length}</span></h3>`+(g.length?g.map(row).join(""):`<p class="hint">No one yet. Use Add person, or change a person’s role from the dropdown on their row.</p>`)}).join("");
 }
+
+// ---------- access (who can manage) ----------
+function accessView(){
+  return `<div class="pagehead"><h2>Access</h2></div><p class="hint">Everyone listed here can sign in and add, edit or delete people, events and schedules. Masters of Initiation and Senior Members from the grading sheet already have access. Trainees never do.</p>`+
+  (staffList.length?staffList.map(x=>`<div class="row line r-${x.role}"><b>${esc(x.name||x.id)}</b><small>${esc(x.id)}</small><span class="sp"></span><select onchange="setStaffRole('${esc(x.id)}',this.value)">${opts(STAFF_ROLES,x.role)}</select><button onclick="rmStaff('${esc(x.id)}')">Remove</button></div>`).join(""):`<p class="empty">No one added yet.</p>`)+
+  `<form class="row" onsubmit="addStaff(event)"><input name="name" placeholder="Name"><input name="email" type="email" placeholder="Email they sign in with" required><select name="role">${opts(STAFF_ROLES,"member")}</select><button class="pri">Give access</button></form>`;
+}
+const setStaffRole=(id,v)=>db.collection("staff").doc(id).update({role:v}).catch(fail);
+function addStaff(e){e.preventDefault();const d=Object.fromEntries(new FormData(e.target));db.collection("staff").doc(d.email.trim().toLowerCase()).set({role:d.role,name:d.name.trim()}).then(()=>{e.target.reset();toast("Access given")}).catch(fail)}
+function rmStaff(id){if(user&&id===user.email.toLowerCase())return toast("You can’t remove yourself");if(confirm("Remove access for "+id+"?"))db.collection("staff").doc(id).delete().catch(fail)}
 
 // ---------- weekly calendar + schedule pictures ----------
 let calPid="",schedPid="",calMode="week",calMonth=0,calDay="",calWeek=0,calA=420,picCache={};
@@ -370,7 +414,7 @@ const COLORS=["#6ea8ff","#7fd9a1","#ff8fb1","#f0c53f","#b794f6","#5fd3d3","#ffa5
 const hue=t=>{let h=0;for(const c of t)h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS.length]};
 const mondayOf=o=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7)+o*7);return d};
 const hm=m=>String(Math.floor(m/60)).padStart(2,"0")+":00";
-function weekGrid(p){
+function weekGrid(p,ed){
   const cls=p?p.classes||[]:[];
   const mon=mondayOf(calWeek),days=[...Array(7)].map((_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d});
   const ds=days.map(iso),today=iso(new Date()),evs=events.filter(e=>ds.includes(e.date));
@@ -381,11 +425,11 @@ function weekGrid(p){
   const times=[];for(let m=a;m<=b;m+=60)times.push(`<span style="top:${m-a}px">${t12(hm(m))}</span>`);
   const cols=days.map((d,i)=>{
     const dow=d.getDay(),s=ds[i];
-    const cb=cls.filter(c=>c.days.includes(dow)).map(c=>`<div class="blk" style="top:${t2m(c.start)-a}px;height:${t2m(c.end)-t2m(c.start)}px;--c:${hue(c.subject)}"><b>${esc(c.subject)}</b>${t12(c.start)}–${t12(c.end)}${c.room?"<br>"+esc(c.room):""}</div>`).join("");
+    const cb=cls.filter(c=>c.days.includes(dow)).map(c=>`<div class="blk ${ed?"edit":""}" ${ed?`onclick="event.stopPropagation();classDlg('${p.id}','${c.id}')"`:""} style="top:${t2m(c.start)-a}px;height:${t2m(c.end)-t2m(c.start)}px;--c:${hue(c.subject)}"><b>${esc(c.subject)}</b>${t12(c.start)}–${t12(c.end)}${c.room?"<br>"+esc(c.room):""}</div>`).join("");
     const eb=evs.filter(e=>e.date===s).map(e=>{const clash=cls.some(c=>c.days.includes(dow)&&t2m(c.start)<t2m(e.end)&&t2m(e.start)<t2m(c.end));
       return `<div class="blk ev ${clash?"clash":""}" style="top:${t2m(e.start)-a}px;height:${t2m(e.end)-t2m(e.start)}px"><b>${esc(e.title)}</b>${t12(e.start)}–${t12(e.end)}${clash?"<br>Class conflict":""}</div>`}).join("");
     const nl=s===today&&nm>=a&&nm<=b?`<div class="now" id="nowline" style="top:${nm-a}px"></div>`:"";
-    return `<div class="col ${s===today?"today":""}" style="height:${H}px">${cb}${eb}${nl}</div>`;
+    return `<div class="col ${s===today?"today":""} ${ed?"ed":""}" style="height:${H}px" ${ed?`onclick="gridAdd(event,'${p.id}',${dow},${a})"`:""}>${cb}${eb}${nl}</div>`;
   }).join("");
   const heads=days.map((d,i)=>`<div class="h ${ds[i]===today?"today":""}">${DAYS[d.getDay()]}<small>${d.toLocaleDateString("en-PH",{month:"short",day:"numeric"})}</small></div>`).join("");
   const f=o=>days[o].toLocaleDateString("en-PH",{month:"short",day:"numeric"});
@@ -408,7 +452,7 @@ function calView(){
   const tog=`<div class="mini"><button class="${calMode==="week"?"on":""}" onclick="calMode='week';render()">Week</button><button class="${calMode==="month"?"on":""}" onclick="calMode='month';render()">Month</button></div>`;
   if(calMode==="month"){const g=monthView(mp);
     return `<div class="pagehead"><h2>Calendar</h2><span class="sp"></span>${tog}</div><div class="row"><button onclick="calMonth--;render()">‹ Prev</button><button onclick="calMonth=0;calDay='';render()">This month</button><button onclick="calMonth++;render()">Next ›</button><b>${g.title}</b><span class="live">Live</span></div>`+g.html}
-  const g=weekGrid(p);
+  const g=weekGrid(p,!!p&&canEdit(p.id));
   return `<div class="pagehead"><h2>Calendar</h2><span class="sp"></span>${tog}${personSelect(pid,"calPid=this.value;render()")}</div>${weekNav(g.rng)}
   ${p?`<p class="hint">${esc(p.name)}${p.course?" · "+esc(p.course):""}. Gold blocks are choir events; a red outline means it clashes with a class.</p>`:`<p class="hint">Choose a name to see a class schedule. Choir events show for everyone.</p>`}${g.html}`;
 }
