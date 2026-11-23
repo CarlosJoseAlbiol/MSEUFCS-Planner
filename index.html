@@ -195,6 +195,14 @@ dialog{max-height:88vh;max-height:88dvh;overflow:auto}
   #toast{bottom:calc(90px + env(safe-area-inset-bottom))}
   dialog{width:calc(100vw - 20px)}
 }
+#toast{opacity:0;visibility:hidden;pointer-events:none}#toast.show{opacity:1;visibility:visible}
+@media(max-width:860px){
+  /* backdrop-filter on #side trapped the fixed bottom bar inside the header; remove it */
+  #side{-webkit-backdrop-filter:none;backdrop-filter:none;background:#1a0408}
+  #shell:not([hidden]) #side{animation:none}
+  #side{padding-bottom:8px}.brand{align-items:center}.brand span{margin-top:2px}
+  .pagehead{align-items:center}
+}
 </style></head><body>
 <div id="login" hidden><section class="hero"><img src="logo.jpg" alt="MSEUF Concert Singers logo"><h1>MSEUF Concert Singers Calendar</h1><div class="lines"></div></section><section class="lr"><div class="lcard" id="lcard"><h2 id="ltitle"></h2><div class="seg" id="lseg" data-active="trainee"><button type="button" data-g="trainee">Trainee</button><button type="button" data-g="staff">Master / Senior Member</button></div><div id="lbody"></div></div></section></div>
 <div id="shell" hidden><button id="min" class="minbtn" onclick="toggleSide()" aria-label="Minimize sidebar" aria-expanded="true" title="Minimize"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><aside id="side"><div class="brand"><img class="logo" src="logo.jpg" alt="" onerror="this.remove()"><div><b>MSEUF</b><span>Concert Singers Calendar</span></div></div><nav id="tabs"></nav><div id="bar"></div><div id="who"></div></aside><main id="app"></main></div><dialog id="dlg"></dialog><div id="toast" role="status"></div>
