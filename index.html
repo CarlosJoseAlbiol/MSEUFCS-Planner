@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>MSEUF Concert Singers Calendar</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#250305">
@@ -169,6 +169,32 @@ h2{font-size:42px}.pagehead{margin-bottom:20px}
 .step{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start;margin:14px 0}.step i{font:600 38px/1 var(--serif);color:var(--gold);font-style:normal}.step p{margin:2px 0 0;color:var(--mut)}.step b{font-size:16px}.card ul{margin:8px 0 0;padding-left:20px}
 form.card{display:grid;gap:12px;justify-items:start}form.card h3{margin:0}
 form.card input,form.card textarea{width:100%;max-width:560px}form.card label{display:grid;gap:4px;margin:0;width:100%;max-width:560px}
+/* ---------- phones, tablets, iOS ---------- */
+html{-webkit-text-size-adjust:100%}
+input,select,textarea{font-size:16px}
+dialog{max-height:88vh;max-height:88dvh;overflow:auto}
+.banner{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:rgba(240,197,63,.12);border:1px solid var(--gold2);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:14px}.banner span{flex:1;min-width:200px}
+.chk{display:flex;gap:8px;margin:5px 0;font-size:14px}.chk i{font-style:normal;width:18px;font-weight:700}
+@media(min-width:861px) and (max-width:1180px){#shell{grid-template-columns:216px 1fr}.minbtn{left:201px}main{padding-left:24px;padding-right:24px}}
+@media(pointer:coarse){button,select,input:not([type=checkbox]):not([type=radio]){min-height:44px}.more summary{min-height:40px;display:flex;align-items:center}}
+@media(max-width:860px){
+  body::after{width:340px;height:340px;opacity:.08;right:-120px;bottom:60px}
+  #shell{display:block}
+  #side{position:sticky;top:0;z-index:40;height:auto;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"brand who" "bar bar";gap:8px 10px;align-items:center;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;border-right:0;border-bottom:1px solid var(--line);background:rgba(26,3,5,.96);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);overflow:visible}
+  .brand{grid-area:brand;min-width:0;padding:0;gap:10px}.logo{width:38px;height:38px}.brand b{font-size:21px}.brand span{display:block;font-size:11px}
+  #who{grid-area:who;flex-direction:row;border:0;padding:0;margin:0}.who{display:none}#who button{padding:6px 14px;font-size:13px;min-height:36px}
+  #bar{grid-area:bar;margin:0;display:flex;gap:8px;align-items:center}#bar label{display:flex;align-items:center;gap:8px;flex:1;margin:0}#bar select{flex:1;min-height:42px}#bar small{display:none}
+  nav#tabs{position:fixed;left:0;right:0;bottom:0;z-index:50;width:auto;flex-direction:row;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:rgba(26,3,5,.98);border-top:1px solid var(--line)}
+  nav#tabs::-webkit-scrollbar{display:none}.ng{display:none}
+  nav#tabs button{flex:0 0 auto;min-width:76px;flex-direction:column;justify-content:center;gap:3px;padding:7px 6px;font-size:11px;text-align:center;border-radius:12px}
+  nav#tabs button svg{width:22px;height:22px}nav#tabs button.on{background:var(--s2);color:var(--gold)}nav#tabs button.on::before{display:none}
+  nav#tabs button .dot{position:absolute;top:6px;right:22px;margin:0}
+  main{max-width:none;padding:16px 14px calc(104px + env(safe-area-inset-bottom))}
+  h2{font-size:32px}h3{font-size:24px}.pagehead{gap:8px 12px;margin-bottom:14px}
+  .line>.link{min-width:0}.line{gap:8px}.row{gap:8px}
+  #toast{bottom:calc(90px + env(safe-area-inset-bottom))}
+  dialog{width:calc(100vw - 20px)}
+}
 </style></head><body>
 <div id="login" hidden><section class="hero"><img src="logo.jpg" alt="MSEUF Concert Singers logo"><h1>MSEUF Concert Singers Calendar</h1><div class="lines"></div></section><section class="lr"><div class="lcard" id="lcard"><h2 id="ltitle"></h2><div class="seg" id="lseg" data-active="trainee"><button type="button" data-g="trainee">Trainee</button><button type="button" data-g="staff">Master / Senior Member</button></div><div id="lbody"></div></div></section></div>
 <div id="shell" hidden><button id="min" class="minbtn" onclick="toggleSide()" aria-label="Minimize sidebar" aria-expanded="true" title="Minimize"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><aside id="side"><div class="brand"><img class="logo" src="logo.jpg" alt="" onerror="this.remove()"><div><b>MSEUF</b><span>Concert Singers Calendar</span></div></div><nav id="tabs"></nav><div id="bar"></div><div id="who"></div></aside><main id="app"></main></div><dialog id="dlg"></dialog><div id="toast" role="status"></div>
@@ -301,11 +327,12 @@ function render(){
   if(!T.some(t=>t[0]===tab))tab="events";
   $("#who").innerHTML=role?`<div class="who"><b>${esc(profile.name||user.email)}</b><small>${ROLES[role]}</small></div><button onclick="leave()">Sign out</button>`:`<div class="who"><b>Trainee view</b><small>No login needed</small></div><button onclick="leave()">MI / Senior Members Login</button>`;
   const lab=Object.fromEntries(T),G=[["Home",["events","news","notif"]],["Schedules",["cal","mine","finder"]],["Choir",["att","people","access"]],["",["help"]]];
-  $("#tabs").innerHTML=G.map(([g,ks])=>{const b=ks.filter(k=>lab[k]).map(k=>`<button class="${k===tab?"on":""}" onclick="go('${k}')" title="${lab[k]}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg><span>${lab[k]}</span>${(k==="news"&&annNew())||(k==="notif"&&notifUnread())?'<i class="dot"></i>':""}</button>`);return b.length?(g?`<div class="ng">${g}</div>`:"")+b.join(""):""}).join("");
+  const navSl=$("#tabs").scrollLeft;$("#tabs").innerHTML=G.map(([g,ks])=>{const b=ks.filter(k=>lab[k]).map(k=>`<button class="${k===tab?"on":""}" onclick="go('${k}')" title="${lab[k]}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg><span>${lab[k]}</span>${(k==="news"&&annNew())||(k==="notif"&&notifUnread())?'<i class="dot"></i>':""}</button>`);return b.length?(g?`<div class="ng">${g}</div>`:"")+b.join(""):""}).join("");$("#tabs").scrollLeft=navSl;
   $("#bar").innerHTML=`<label>I am: <select onchange="setMe(this.value)"><option value="">— choose your name —</option>${peopleOpts(me)}</select></label>${role?"":'<small>Not listed? Ask an officer to add you.</small>'}`;
-  $("#app").innerHTML=({events:evView,news:annView,access:accessView,help:helpView,notif:notifView,att:attView,cal:calView,mine:schedPage,people:peopleView,finder:finderView})[tab]();
+  $("#app").innerHTML=iaBanner()+({events:evView,news:annView,access:accessView,help:helpView,notif:notifView,att:attView,cal:calView,mine:schedPage,people:peopleView,finder:finderView})[tab]();
   if(tab==="finder"){finderRes();sugRes()}
   if(!wasIn){wasIn=true;animateMain()}
+  if(lastTab!==tab){lastTab=tab;const on=document.querySelector("#tabs .on");if(on&&innerWidth<=860)on.scrollIntoView({inline:"center",block:"nearest"})}
 }
 function setMe(v){me=v;localStorage.setItem("me",v);render()}
 
@@ -440,7 +467,7 @@ function addStaff(e){e.preventDefault();const d=Object.fromEntries(new FormData(
 function rmStaff(id){if(user&&id===user.email.toLowerCase())return toast("You can’t remove yourself");if(confirm("Remove access for "+id+"?"))db.collection("staff").doc(id).delete().catch(fail)}
 
 // ---------- weekly calendar + schedule pictures ----------
-let calPid="",schedPid="",calMode="week",calMonth=0,calDay="",calWeek=0,calA=420,picCache={};
+let lastTab="",calPid="",schedPid="",calMode="week",calMonth=0,calDay="",calWeek=0,calA=420,picCache={};
 const COLORS=["#6ea8ff","#7fd9a1","#ff8fb1","#f0c53f","#b794f6","#5fd3d3","#ffa56e","#9fd356"];
 const hue=t=>{let h=0;for(const c of t)h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS.length]};
 const mondayOf=o=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7)+o*7);return d};
@@ -684,29 +711,42 @@ function expIcs(pid){
 }
 
 // ---------- notifications + install ----------
-let notifs=[],notifReady=false,installEvt=null,swReg=null;const bootT=Date.now();
+let notifs=[],notifReady=false,installEvt=null,swReg=null,fcmOk=null,iaDismissed=localStorage.getItem("iaDismiss")==="1";const bootT=Date.now();
 const notifUnread=()=>notifs.filter(n=>n.createdAt>(+localStorage.getItem("notifSeen")||0)).length;
 const evLine=d=>dstr(d.date)+" · "+t12(d.start)+"–"+t12(d.end)+(d.venue?" · "+d.venue:"");
 const notify=(title,body)=>db.collection("notifications").add({title,body:body||"",createdAt:Date.now(),by:(profile&&profile.name)||""}).catch(()=>{});
-function localNotif(n){
-  if(!("Notification" in window)||Notification.permission!=="granted"||localStorage.getItem("notifOn")!=="1")return;
-  const o={body:n.body||"",icon:"icon-192.png",tag:n.id};
-  swReg?swReg.showNotification(n.title,o):new Notification(n.title,o);
+const isStandalone=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true,isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const isInApp=()=>/FBAN|FBAV|FB_IAB|FBIOS|Messenger|Instagram|Line\/|MicroMessenger|TikTok|Bytedance|; wv\)/i.test(navigator.userAgent),hasNotif=()=>"Notification" in window;
+const iaBanner=()=>isInApp()&&!iaDismissed?`<div class="banner"><span>You opened this inside another app (like Messenger or Facebook). To install the app and get alerts, tap <b>⋮</b> or <b>•••</b> and choose <b>Open in browser</b>.</span><button onclick="iaDismissed=true;localStorage.setItem('iaDismiss','1');render()">Got it</button></div>`:"";
+function whyNot(){
+  if(isInApp())return "You’re inside another app’s browser (like Messenger or Facebook). Tap <b>⋮</b> or <b>•••</b> and choose <b>Open in browser</b> (Chrome or Safari), then try again.";
+  if(!window.isSecureContext)return "Alerts only work on a secure (https) link.";
+  if(isIOS()&&!isStandalone())return "On iPhone, tap the Share button, then <b>Add to Home Screen</b>. Open the app from your Home Screen, then turn on alerts.";
+  if(!hasNotif())return "This browser can’t show alerts. Try Chrome on Android or Safari on iPhone.";
+  if(Notification.permission==="denied")return "Alerts are blocked. Open your browser’s settings for this site and allow <b>Notifications</b>, then come back.";
+  return "";
+}
+async function localNotif(n){
+  if(!hasNotif()||Notification.permission!=="granted"||localStorage.getItem("notifOn")!=="1")return;
+  const o={body:n.body||"",icon:"icon-192.png",badge:"icon-192.png",tag:n.id};
+  try{const r=swReg||(navigator.serviceWorker&&await navigator.serviceWorker.getRegistration());if(r)return await r.showNotification(n.title,o);new Notification(n.title,o)}catch(e){}
 }
 db.collection("notifications").orderBy("createdAt","desc").limit(30).onSnapshot(q=>{
   q.docChanges().forEach(c=>{if(c.type==="added"&&notifReady){const n={id:c.doc.id,...c.doc.data()};if(n.createdAt>bootT-5000){toast(n.title);if(document.hidden)localNotif(n)}}});
   notifs=q.docs.map(x=>({id:x.id,...x.data()}));notifReady=true;render()},()=>{});
-if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{swReg=r;if(localStorage.getItem("notifOn")==="1"&&"Notification" in window&&Notification.permission==="granted")enablePush(true)}).catch(()=>{}));
+Promise.resolve().then(()=>typeof firebase.messaging==="function"&&firebase.messaging.isSupported()).then(v=>{fcmOk=!!v;render()}).catch(()=>{fcmOk=false});
+if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{swReg=r;render();if(localStorage.getItem("notifOn")==="1"&&hasNotif()&&Notification.permission==="granted")enablePush(true)}).catch(()=>{}));
 addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;render()});
 addEventListener("appinstalled",()=>{installEvt=null;render()});
-const isStandalone=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true,isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&tab!=="notif"&&notifUnread())toast("You have new updates")});
 const installApp=()=>installEvt&&installEvt.prompt().then(()=>{installEvt=null;render()});
 async function enablePush(quiet){
-  if(!("Notification" in window))return quiet||toast("This browser can’t show notifications");
+  if(!hasNotif()||isInApp()){render();return quiet||toast("Open this page in Chrome or Safari to turn on alerts")}
   const perm=Notification.permission==="granted"?"granted":await Notification.requestPermission();
-  if(perm!=="granted"){render();return quiet||toast("Notifications are blocked. Allow them in your browser settings.")}
+  if(perm!=="granted"){render();return quiet||toast("Alerts are blocked. Allow notifications in your browser settings.")}
   localStorage.setItem("notifOn","1");
-  if(VAPID_KEY.startsWith("YOUR_")||!firebase.messaging.isSupported()){render();return quiet||toast("Alerts will show while the app is open")}
+  let ok=false;try{ok=typeof firebase.messaging==="function"&&await Promise.resolve(firebase.messaging.isSupported())}catch(e){}
+  if(VAPID_KEY.startsWith("YOUR_")||!ok){render();return quiet||toast("Alerts will show while the app is open")}
   try{
     const reg=swReg||await navigator.serviceWorker.ready,token=await firebase.messaging().getToken({vapidKey:VAPID_KEY,serviceWorkerRegistration:reg});
     await db.collection("pushTokens").doc(token).set({token,personId:me||"",createdAt:Date.now()});
@@ -714,15 +754,18 @@ async function enablePush(quiet){
   }catch(e){quiet||fail(e)}
   render();
 }
-async function turnOffPush(){localStorage.setItem("notifOn","0");try{if(firebase.messaging.isSupported())await firebase.messaging().deleteToken()}catch(e){}render();toast("Notifications are off")}
+async function turnOffPush(){localStorage.setItem("notifOn","0");try{if(typeof firebase.messaging==="function"&&await Promise.resolve(firebase.messaging.isSupported()))await firebase.messaging().deleteToken()}catch(e){}render();toast("Notifications are off")}
+function testNotif(){localNotif({id:"test"+Date.now(),title:"Test alert",body:"If you can see this, alerts work on this device."});toast("Test sent. Look at your notification bar.")}
 function sendNotif(e){e.preventDefault();const f=new FormData(e.target);notify(f.get("title"),f.get("body"));e.target.reset();toast("Sent")}
 function notifView(){
-  const perm="Notification" in window?Notification.permission:"unsupported",on=perm==="granted"&&localStorage.getItem("notifOn")==="1";
+  const perm=hasNotif()?Notification.permission:"unsupported",on=perm==="granted"&&localStorage.getItem("notifOn")==="1",why=whyNot();
   const ago=t=>{const m=Math.round((Date.now()-t)/60000);return m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" hr ago":new Date(t).toLocaleDateString("en-PH",{month:"short",day:"numeric"})};
-  const inst=isStandalone()?"The app is installed on this device.":installEvt?`<button class="pri" onclick="installApp()">Install the app</button>`:isIOS()?"On iPhone: tap the Share button, then <b>Add to Home Screen</b>. Open the app from your Home Screen to turn on notifications.":"In your browser menu, choose <b>Install app</b> or <b>Add to Home screen</b>.";
+  const inst=isStandalone()?"The app is installed on this device.":installEvt?`<button class="pri" onclick="installApp()">Install the app</button>`:isIOS()?"On iPhone: tap the Share button, then <b>Add to Home Screen</b>. Open the app from your Home Screen to turn on alerts.":"In your browser menu, choose <b>Install app</b> or <b>Add to Home screen</b>.";
+  const chk=[["Secure link (https)",window.isSecureContext],["Not inside another app’s browser",!isInApp()],["Browser can show alerts",hasNotif()],["Background service ready",!!swReg],["Push service supported",fcmOk],["Closed-app alerts set up",!VAPID_KEY.startsWith("YOUR_")],["Installed on home screen",isStandalone()],["Permission: "+perm,perm==="granted"]];
   return `<div class="pagehead"><h2>Notifications</h2></div>
-  <div class="card"><h3>Alerts on this device</h3><p>${on?'Alerts are <b class="ok">on</b>.':perm==="denied"?"Alerts are blocked. Allow notifications for this site in your browser settings.":perm==="unsupported"?"This browser can’t show alerts. On an iPhone, add the app to your Home Screen first.":"Get an alert when a rehearsal or event is added, changed or cancelled."}</p>
-  <div class="row">${on?`<button onclick="turnOffPush()">Turn off</button>`:perm==="unsupported"||perm==="denied"?"":`<button class="pri" onclick="enablePush()">Turn on notifications</button>`}</div></div>
+  <div class="card"><h3>Alerts on this device</h3><p>${on?'Alerts are <b class="ok">on</b>.':why?why:"Get an alert when a rehearsal or event is added, changed or cancelled."}</p>
+  <div class="row">${on?`<button class="pri" onclick="testNotif()">Send me a test</button><button onclick="turnOffPush()">Turn off</button>`:why&&perm!=="default"?"":`<button class="pri" onclick="enablePush()">Turn on notifications</button>`}</div>
+  <details><summary>Check this device</summary>${chk.map(([l,v])=>`<div class="chk"><i class="${v?"ok":"bad"}">${v===null?"…":v?"✓":"✗"}</i>${l}</div>`).join("")}<p class="hint">Alerts when the app is closed also need the app installed on the home screen and the phone’s battery saver not blocking it.</p></details></div>
   <div class="card"><h3>Add to home screen</h3><p>${inst}</p></div>
   ${role?`<form class="card" onsubmit="sendNotif(event)"><h3>Send an alert</h3><input name="title" placeholder="Title, e.g. Rehearsal moved" required><label>Message<textarea name="body" rows="2"></textarea></label><button class="pri">Send to everyone</button></form>`:""}
   <h3 class="sec">Recent</h3>`+(notifs.length?notifs.map(n=>`<div class="row line"><div><b>${esc(n.title)}</b><br><small>${esc(n.body||"")}</small></div><span class="sp"></span><small>${ago(n.createdAt)}</small></div>`).join(""):`<p class="empty">Nothing yet.</p>`);
